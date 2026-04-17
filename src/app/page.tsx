@@ -203,6 +203,109 @@ function AIEstimationCard({ item, index, onNameClick }: {
   );
 }
 
+function GuideSection({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl bg-zinc-800/80 ring-1 ring-zinc-700/60 overflow-hidden">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2.5 px-4 py-3 text-left hover:bg-zinc-700/40 transition-colors">
+        <span className="text-base shrink-0">{icon}</span>
+        <p className="text-sm font-semibold text-zinc-200 flex-1">{title}</p>
+        <span className="text-zinc-500 text-xs shrink-0">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && <div className="px-4 pb-4 space-y-2 border-t border-zinc-700/40 pt-3">{children}</div>}
+    </div>
+  );
+}
+
+function GuideBullet({ text, sub }: { text: string; sub?: string }) {
+  return (
+    <div className="flex gap-2">
+      <span className="text-amber-500 shrink-0 mt-0.5 text-xs">&bull;</span>
+      <div>
+        <p className="text-xs text-zinc-300 leading-relaxed">{text}</p>
+        {sub && <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+function FieldResponseGuide() {
+  return (
+    <div className="space-y-2">
+      <div className="px-1 pb-1">
+        <p className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">화학물질 사고 현장대응 가이드</p>
+        <p className="text-[10px] text-zinc-600 mt-0.5">물질명을 검색하거나, 아래 가이드를 참고하세요</p>
+      </div>
+
+      <GuideSection icon="🛡" title="1. 현장 접근 및 안전 확보">
+        <GuideBullet text="풍향 확인 — 반드시 바람을 등지고(풍상) 접근" />
+        <GuideBullet text="초기 격리거리: 최소 25~50m (폭발·독성 가스는 100m 이상)" sub="ERG 2024 기준, 물질별 격리거리 확인 필수" />
+        <GuideBullet text="Hot / Warm / Cold Zone 구분 설정" sub="Hot: 오염원 중심 / Warm: 제독 구역 / Cold: 안전 구역" />
+        <GuideBullet text="2차 오염 방지 — 개인보호장비(PPE) 미착용 시 절대 진입 금지" />
+        <GuideBullet text="위험물 표지판·용기 라벨·UN 번호·NFPA 다이아몬드 확인" />
+      </GuideSection>
+
+      <GuideSection icon="🧰" title="2. 개인보호장비(PPE) 선택">
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { level: 'A', color: 'text-red-400 bg-red-500/10 ring-red-500/30', desc: '완전 밀폐형 화학복 + SCBA\n미지의 물질, 고농도 독성 가스, IDLH 환경' },
+            { level: 'B', color: 'text-amber-400 bg-amber-500/10 ring-amber-500/30', desc: 'SCBA + 비밀폐형 화학복\n호흡 위험은 높으나 피부 흡수 위험 낮을 때' },
+            { level: 'C', color: 'text-blue-400 bg-blue-500/10 ring-blue-500/30', desc: '공기정화식 마스크 + 화학복\n물질 확인됨, 농도 측정 가능 시' },
+            { level: 'D', color: 'text-zinc-400 bg-zinc-700/50 ring-zinc-600/50', desc: '일반 작업복\n화학 위험 없는 구역에서만' },
+          ].map((ppe) => (
+            <div key={ppe.level} className={`rounded-xl ring-1 p-2.5 ${ppe.color}`}>
+              <p className="text-xs font-bold">Level {ppe.level}</p>
+              <p className="text-[10px] text-zinc-400 leading-relaxed mt-1 whitespace-pre-line">{ppe.desc}</p>
+            </div>
+          ))}
+        </div>
+      </GuideSection>
+
+      <GuideSection icon="🚑" title="3. 현장 응급처치 원칙">
+        <GuideBullet text="흡입: 즉시 신선한 공기로 이동, 의식 확인, SpO₂ 모니터링" sub="호흡 곤란 시 산소 투여 15L/min NRB 마스크" />
+        <GuideBullet text="피부 접촉: 오염 의복 즉시 제거(2차 오염 주의), 흐르는 물 15~20분 세척" sub="중화제 사용 금지 — 발열 반응으로 2차 손상 유발" />
+        <GuideBullet text="눈 접촉: 생리식염수 또는 흐르는 물로 최소 15~20분 세안" sub="콘택트렌즈 즉시 제거, 눈꺼풀 젖혀 결막낭까지 세척" />
+        <GuideBullet text="섭취: 구토 유도 금지(부식성 물질 재손상), 의식 있으면 물 소량 투여" />
+        <GuideBullet text="불화수소(HF) 노출: 글루콘산칼슘 겔 도포 — 일반 세척만으로 불충분" />
+        <GuideBullet text="시안화물 노출: 히드록소코발라민(Cyanokit) 또는 아질산나트륨 키트 준비" />
+      </GuideSection>
+
+      <GuideSection icon="🏥" title="4. 병원 전 / 병원 내 조치">
+        <GuideBullet text="이송 전: 현장 제독 완료 확인, 오염 의복 밀봉 보관" sub="병원 2차 오염 방지 — 제독 미완료 환자 병원 반입 시 의료진 위험" />
+        <GuideBullet text="물질명·CAS 번호·노출 경로·노출 시간·추정 농도 기록하여 병원 전달" />
+        <GuideBullet text="혈액검사: CBC, 전해질, 간·신기능, 동맥혈가스분석(ABGA), 젖산(Lactate)" sub="물질에 따라 메트헤모글로빈, 카복시헤모글로빈, 콜린에스테라제 추가" />
+        <GuideBullet text="흉부 X-ray: 폐부종 여부 확인 (포스겐, NOx 등은 지연성 폐부종 주의)" />
+        <GuideBullet text="해독제 확보 여부 사전 확인" sub="히드록소코발라민(시안화물), 아트로핀+프랄리독심(유기인계), 글루콘산칼슘(불산)" />
+        <GuideBullet text="경과 관찰: 최소 6~24시간 (지연성 독성 물질 노출 시)" />
+      </GuideSection>
+
+      <GuideSection icon="📋" title="5. 제독(Decontamination) 절차">
+        <GuideBullet text="건식 제독: 분말·고체 물질은 먼저 브러시로 털어내기" />
+        <GuideBullet text="습식 제독: 다량의 물 + 중성 세제로 세척 (위→아래 방향)" sub="오염수 유출 방지 — 수거 후 적절히 처리" />
+        <GuideBullet text="제독 순서: 가장 심한 오염 부위부터, 머리→몸통→사지 순" />
+        <GuideBullet text="제독 후: 깨끗한 담요·가운 제공, 저체온 방지" />
+      </GuideSection>
+
+      <GuideSection icon="⚠️" title="6. 절대 금지 사항">
+        <GuideBullet text="PPE 미착용 상태로 오염 구역 진입 금지" />
+        <GuideBullet text="부식성 물질 섭취 시 구토 유도 금지" />
+        <GuideBullet text="산·알칼리에 중화제(반대 물질) 사용 금지 — 발열·가스 발생" />
+        <GuideBullet text="화재 시 물 사용 주의 — 금수성 물질(Na, K, Li, Mg) 확인" sub="금수성 물질: 마른 모래, 팽창질석, D급 소화기 사용" />
+        <GuideBullet text="미확인 물질 냄새 맡기·직접 접촉 금지" />
+        <GuideBullet text="밀폐 공간 단독 진입 금지 — 반드시 2인 1조 이상" />
+      </GuideSection>
+
+      <GuideSection icon="📞" title="7. 신고 및 연락처">
+        <GuideBullet text="119 (소방/구급) — 화학사고 발생 즉시 신고" />
+        <GuideBullet text="화학물질안전원 사고대응 1600-2075 (24시간)" />
+        <GuideBullet text="환경부 화학사고 신고 110" />
+        <GuideBullet text="독극물 정보센터 02-2030-1111 (서울대병원)" sub="물질 정보, 해독제, 치료 지침 문의" />
+        <GuideBullet text="CHEMTRAC (화학물질운송사고) 1577-8382" />
+      </GuideSection>
+    </div>
+  );
+}
+
 function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => void }) {
   const router = useRouter();
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -291,8 +394,8 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
         {/* Loading state */}
         {loading && <><SkeletonCard /><SkeletonCard /><SkeletonCard /></>}
 
-        {/* Empty state */}
-        {!loading && !aiLoading && !query.trim() && <EmptyState icon="&#129514;" text="물질명, CAS 번호, UN 번호를 입력하면 즉시 검색됩니다" />}
+        {/* 검색 전: 현장대응 가이드 */}
+        {!loading && !aiLoading && !query.trim() && <FieldResponseGuide />}
 
         {/* Local DB results */}
         {!loading && results.length > 0 && (
@@ -428,6 +531,7 @@ function WindowB({ onSearchName }: { onSearchName: (name: string) => void }) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [tab, setTab] = useState<'a' | 'b'>('a');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -449,6 +553,14 @@ export default function Home() {
             <h1 className="text-base font-bold text-zinc-100 leading-tight tracking-tight">ChemGuard</h1>
             <p className="text-[10px] text-zinc-500 leading-none mt-0.5">화학물질 사고 대응 플랫폼</p>
           </div>
+          <div className="flex-1" />
+          <button
+            onClick={() => router.push('/zone')}
+            className="flex items-center gap-1.5 rounded-xl bg-red-600/15 ring-1 ring-red-500/30 px-3 py-2 hover:bg-red-600/25 transition-colors"
+          >
+            <span className="text-sm">📷</span>
+            <span className="text-xs font-semibold text-red-300">Zone</span>
+          </button>
         </div>
       </header>
 
