@@ -76,3 +76,21 @@ export interface AIEstimation {
   reasoning: string;
   immediate_actions: string[];
 }
+
+export interface AISearchResult {
+  name_ko: string;
+  name_en: string;
+  cas_number: string;
+  un_number?: string;
+  formula?: string;
+  hazard_class: string;
+  danger_level: number;
+  appearance: string;
+  odor?: string;
+  first_aid_summary: {
+    inhalation: string;
+    skin: string;
+    eye: string;
+    ingestion: string;
+  };
+}
