@@ -97,7 +97,7 @@ function SearchResultCard({ result, onClick }: { result: SearchResult; onClick: 
   );
 }
 
-function AISearchResultCard({ item }: { item: AISearchResult }) {
+function AISearchResultCard({ item, onSpeak }: { item: AISearchResult; onSpeak?: (text: string) => void }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -147,9 +147,22 @@ function AISearchResultCard({ item }: { item: AISearchResult }) {
         </div>
       )}
 
-      <div className="flex items-center gap-1 mt-2">
+      <div className="flex items-center gap-2 mt-2">
         <span className="text-[11px] text-zinc-600">{expanded ? '접기' : '응급처치 보기'}</span>
         <span className="text-[11px] text-zinc-600">{expanded ? '▲' : '▼'}</span>
+        {onSpeak && (
+          <span
+            role="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const fa = item.first_aid_summary;
+              onSpeak(`${item.name_ko}. 흡입 시: ${fa.inhalation}. 피부 접촉 시: ${fa.skin}. 눈 접촉 시: ${fa.eye}. 섭취 시: ${fa.ingestion}`);
+            }}
+            className="ml-auto text-[11px] text-blue-400 hover:text-blue-300"
+          >
+            🔊 읽기
+          </span>
+        )}
       </div>
     </button>
   );
@@ -306,6 +319,58 @@ function FieldResponseGuide() {
   );
 }
 
+function useVoice() {
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+
+  const startListening = useCallback((onResult: (text: string) => void) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (e: any) => {
+      const text = e.results[0]?.[0]?.transcript;
+      if (text) onResult(text);
+    };
+    recognition.onend = () => setListening(false);
+    recognition.onerror = () => setListening(false);
+    recognition.start();
+    recognitionRef.current = recognition;
+    setListening(true);
+  }, []);
+
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.stop();
+    setListening(false);
+  }, []);
+
+  const speak = useCallback((text: string) => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    utterance.rate = 1.0;
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  }, []);
+
+  const stopSpeaking = useCallback(() => {
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+  }, []);
+
+  return { listening, speaking, startListening, stopListening, speak, stopSpeaking };
+}
+
 function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => void }) {
   const router = useRouter();
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -314,6 +379,7 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
   const [aiLoading, setAiLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const voice = useVoice();
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -380,15 +446,40 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
 
   return (
     <div className="flex flex-col gap-3 h-full">
-      <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-base pointer-events-none">&#128269;</span>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="물질명, CAS 번호, UN 번호..."
-          className="w-full rounded-2xl border border-zinc-700/60 bg-zinc-900 pl-9 pr-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20 transition-all"
-        />
+      <div className="relative flex gap-2">
+        <div className="relative flex-1">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-base pointer-events-none">&#128269;</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="물질명, CAS 번호, UN 번호..."
+            className="w-full rounded-2xl border border-zinc-700/60 bg-zinc-900 pl-9 pr-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20 transition-all"
+          />
+        </div>
+        <button
+          onClick={() => {
+            if (voice.listening) { voice.stopListening(); }
+            else { voice.startListening((text) => setQuery(text)); }
+          }}
+          className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+            voice.listening
+              ? 'bg-red-500/20 ring-2 ring-red-500/50 animate-pulse'
+              : 'bg-zinc-800 ring-1 ring-zinc-700 hover:bg-zinc-700'
+          }`}
+          title="음성 검색"
+        >
+          <span className="text-lg">{voice.listening ? '⏹' : '🎤'}</span>
+        </button>
+        {voice.speaking && (
+          <button
+            onClick={() => voice.stopSpeaking()}
+            className="shrink-0 w-12 h-12 rounded-2xl bg-blue-500/20 ring-2 ring-blue-500/50 flex items-center justify-center animate-pulse"
+            title="읽기 중지"
+          >
+            <span className="text-lg">🔇</span>
+          </button>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pb-2">
         {/* Loading state */}
@@ -419,7 +510,7 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
             <p className="text-[10px] text-zinc-600 px-1 -mt-1">AI 생성 참고용 &middot; 공식 MSDS 확인 필요</p>
             {aiLoading && aiResults.length === 0 && <><SkeletonCard /><SkeletonCard /></>}
             {aiResults.map((item, i) => (
-              <AISearchResultCard key={`${item.cas_number}-${i}`} item={item} />
+              <AISearchResultCard key={`${item.cas_number}-${i}`} item={item} onSpeak={voice.speak} />
             ))}
           </>
         )}
@@ -555,11 +646,32 @@ export default function Home() {
           </div>
           <div className="flex-1" />
           <button
+            onClick={() => router.push('/vision')}
+            className="flex items-center gap-1.5 rounded-xl bg-violet-600/15 ring-1 ring-violet-500/30 px-2.5 py-2 hover:bg-violet-600/25 transition-colors"
+          >
+            <span className="text-sm">📸</span>
+            <span className="text-xs font-semibold text-violet-300 hidden sm:inline">식별</span>
+          </button>
+          <button
+            onClick={() => router.push('/map')}
+            className="flex items-center gap-1.5 rounded-xl bg-cyan-600/15 ring-1 ring-cyan-500/30 px-2.5 py-2 hover:bg-cyan-600/25 transition-colors"
+          >
+            <span className="text-sm">🗺️</span>
+            <span className="text-xs font-semibold text-cyan-300 hidden sm:inline">지도</span>
+          </button>
+          <button
             onClick={() => router.push('/zone')}
-            className="flex items-center gap-1.5 rounded-xl bg-red-600/15 ring-1 ring-red-500/30 px-3 py-2 hover:bg-red-600/25 transition-colors"
+            className="flex items-center gap-1.5 rounded-xl bg-red-600/15 ring-1 ring-red-500/30 px-2.5 py-2 hover:bg-red-600/25 transition-colors"
           >
             <span className="text-sm">📷</span>
-            <span className="text-xs font-semibold text-red-300">Zone</span>
+            <span className="text-xs font-semibold text-red-300 hidden sm:inline">Zone</span>
+          </button>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-1.5 rounded-xl bg-amber-600/15 ring-1 ring-amber-500/30 px-2.5 py-2 hover:bg-amber-600/25 transition-colors"
+          >
+            <span className="text-sm">📋</span>
+            <span className="text-xs font-semibold text-amber-300 hidden sm:inline">상황판</span>
           </button>
         </div>
       </header>
