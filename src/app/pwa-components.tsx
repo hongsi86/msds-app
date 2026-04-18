@@ -31,7 +31,7 @@ export function OfflineIndicator() {
   if (!offline) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] bg-amber-600/90 backdrop-blur px-4 py-2 text-center safe-area-top">
+    <div className="fixed top-0 left-0 right-0 z-[9999] bg-amber-500 backdrop-blur px-4 py-2 text-center safe-area-top">
       <p className="text-xs font-semibold text-white">📡 오프라인 모드 — 로컬 데이터만 사용 가능, AI 기능 제한</p>
     </div>
   );
@@ -67,12 +67,12 @@ export function InstallPrompt() {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-[9999] max-w-md mx-auto rounded-2xl bg-zinc-800/95 backdrop-blur ring-1 ring-zinc-700 p-4 shadow-xl safe-area-bottom">
-      <p className="text-sm font-semibold text-zinc-100 mb-1">📱 앱으로 설치</p>
-      <p className="text-xs text-zinc-400 mb-3">홈 화면에 추가하면 오프라인에서도 사용할 수 있습니다</p>
+    <div className="fixed bottom-4 left-4 right-4 z-[9999] max-w-md mx-auto rounded-2xl bg-white/95 backdrop-blur border border-slate-200 p-4 shadow-xl safe-area-bottom">
+      <p className="text-sm font-semibold text-slate-800 mb-1">📱 앱으로 설치</p>
+      <p className="text-xs text-slate-500 mb-3">홈 화면에 추가하면 오프라인에서도 사용할 수 있습니다</p>
       <div className="flex gap-2">
-        <button onClick={install} className="flex-1 rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 transition-colors">설치</button>
-        <button onClick={dismiss} className="rounded-xl bg-zinc-700 px-4 py-2.5 text-xs text-zinc-400 hover:bg-zinc-600 transition-colors">닫기</button>
+        <button onClick={install} className="flex-1 rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors">설치</button>
+        <button onClick={dismiss} className="rounded-xl bg-slate-100 px-4 py-2.5 text-xs text-slate-500 hover:bg-slate-200 transition-colors">닫기</button>
       </div>
     </div>
   );

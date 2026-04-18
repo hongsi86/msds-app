@@ -38,20 +38,20 @@ interface AIEstimation {
 }
 
 function confidenceBadge(c: AIEstimation['confidence']) {
-  if (c === '높음') return 'bg-red-500/15 text-red-300 ring-1 ring-red-500/30';
-  if (c === '중간') return 'bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30';
-  return 'bg-zinc-700/50 text-zinc-400 ring-1 ring-zinc-600/50';
+  if (c === '높음') return 'bg-rose-50 text-rose-700 ring-1 ring-rose-200';
+  if (c === '중간') return 'bg-amber-50 text-amber-700 ring-1 ring-amber-200';
+  return 'bg-slate-100 text-slate-500 ring-1 ring-slate-200';
 }
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl bg-zinc-800/60 p-4 space-y-2.5 animate-pulse">
+    <div className="rounded-2xl bg-white border border-slate-100 p-4 space-y-2.5 animate-pulse shadow-sm">
       <div className="flex gap-2">
-        <div className="h-4 w-1/2 rounded-full bg-zinc-700" />
-        <div className="h-4 w-16 rounded-full bg-zinc-700 ml-auto" />
+        <div className="h-4 w-1/2 rounded-full bg-slate-100" />
+        <div className="h-4 w-16 rounded-full bg-slate-100 ml-auto" />
       </div>
-      <div className="h-3 w-full rounded-full bg-zinc-700/70" />
-      <div className="h-3 w-4/5 rounded-full bg-zinc-700/70" />
+      <div className="h-3 w-full rounded-full bg-slate-50" />
+      <div className="h-3 w-4/5 rounded-full bg-slate-50" />
     </div>
   );
 }
@@ -60,7 +60,7 @@ function EmptyState({ icon, text }: { icon: string; text: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-3">
       <span className="text-4xl">{icon}</span>
-      <p className="text-xs text-zinc-500 text-center max-w-[200px] leading-relaxed">{text}</p>
+      <p className="text-xs text-slate-400 text-center max-w-[200px] leading-relaxed">{text}</p>
     </div>
   );
 }
@@ -69,29 +69,29 @@ function SearchResultCard({ result, onClick }: { result: SearchResult; onClick: 
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-2xl bg-zinc-800/80 ring-1 ring-zinc-700/60 p-4 active:scale-[0.98] hover:bg-zinc-700/80 hover:ring-zinc-600 transition-all duration-150"
+      className="w-full text-left rounded-2xl bg-white border border-slate-200 p-4 active:scale-[0.98] hover:border-slate-300 hover:shadow-md transition-all duration-150 shadow-sm"
     >
       <div className="flex items-start justify-between gap-2 mb-1.5">
-        <p className="font-semibold text-zinc-100 text-sm leading-snug">{result.name}</p>
+        <p className="font-semibold text-slate-800 text-sm leading-snug">{result.name}</p>
         <div className="flex shrink-0 gap-1 flex-wrap justify-end">
           {result.cas_number && (
-            <span className="rounded-full bg-blue-500/10 ring-1 ring-blue-500/30 px-2 py-0.5 text-[11px] text-blue-300 font-mono">
+            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-[11px] text-sky-700 font-mono">
               {result.cas_number}
             </span>
           )}
           {result.un_number && (
-            <span className="rounded-full bg-violet-500/10 ring-1 ring-violet-500/30 px-2 py-0.5 text-[11px] text-violet-300 font-mono">
+            <span className="rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[11px] text-violet-700 font-mono">
               {result.un_number}
             </span>
           )}
         </div>
       </div>
       {result.description && (
-        <p className="text-xs text-zinc-500 line-clamp-1">{result.description}</p>
+        <p className="text-xs text-slate-400 line-clamp-1">{result.description}</p>
       )}
       <div className="flex items-center gap-1 mt-2">
-        <span className="text-[11px] text-zinc-600">상세 보기</span>
-        <span className="text-[11px] text-zinc-600">&rarr;</span>
+        <span className="text-[11px] text-slate-400">상세 보기</span>
+        <span className="text-[11px] text-slate-400">&rarr;</span>
       </div>
     </button>
   );
@@ -103,36 +103,36 @@ function AISearchResultCard({ item, onSpeak }: { item: AISearchResult; onSpeak?:
   return (
     <button
       onClick={() => setExpanded(!expanded)}
-      className="w-full text-left rounded-2xl bg-zinc-800/80 ring-1 ring-amber-500/30 p-4 active:scale-[0.98] hover:bg-zinc-700/80 hover:ring-amber-500/50 transition-all duration-150"
+      className="w-full text-left rounded-2xl bg-white border border-amber-200 p-4 active:scale-[0.98] hover:border-amber-300 hover:shadow-md transition-all duration-150 shadow-sm"
     >
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="shrink-0 rounded-full bg-amber-500/15 ring-1 ring-amber-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">AI</span>
-          <p className="font-semibold text-zinc-100 text-sm leading-snug">{item.name_ko}</p>
+          <span className="shrink-0 rounded-full bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">AI</span>
+          <p className="font-semibold text-slate-800 text-sm leading-snug">{item.name_ko}</p>
         </div>
         <div className="flex shrink-0 gap-1 flex-wrap justify-end">
           {item.cas_number && (
-            <span className="rounded-full bg-blue-500/10 ring-1 ring-blue-500/30 px-2 py-0.5 text-[11px] text-blue-300 font-mono">
+            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-[11px] text-sky-700 font-mono">
               {item.cas_number}
             </span>
           )}
           {item.un_number && (
-            <span className="rounded-full bg-violet-500/10 ring-1 ring-violet-500/30 px-2 py-0.5 text-[11px] text-violet-300 font-mono">
+            <span className="rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[11px] text-violet-700 font-mono">
               {item.un_number}
             </span>
           )}
         </div>
       </div>
-      <p className="text-xs text-zinc-500 line-clamp-1">
+      <p className="text-xs text-slate-500 line-clamp-1">
         {item.name_en}{item.formula ? ` (${item.formula})` : ''} &middot; {item.hazard_class}
       </p>
       {item.appearance && (
-        <p className="text-xs text-zinc-600 mt-0.5">{item.appearance}{item.odor ? ` · ${item.odor}` : ''}</p>
+        <p className="text-xs text-slate-400 mt-0.5">{item.appearance}{item.odor ? ` · ${item.odor}` : ''}</p>
       )}
 
       {expanded && item.first_aid_summary && (
-        <div className="mt-3 rounded-xl bg-amber-500/5 ring-1 ring-amber-500/20 p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
-          <p className="text-[11px] font-semibold text-amber-400 uppercase tracking-wide">응급처치 요약</p>
+        <div className="mt-3 rounded-xl bg-amber-50/60 border border-amber-100 p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">응급처치 요약</p>
           {[
             { label: '흡입', icon: '💨', text: item.first_aid_summary.inhalation },
             { label: '피부', icon: '🖐', text: item.first_aid_summary.skin },
@@ -140,16 +140,16 @@ function AISearchResultCard({ item, onSpeak }: { item: AISearchResult; onSpeak?:
             { label: '섭취', icon: '🍽', text: item.first_aid_summary.ingestion },
           ].map((fa) => (
             <div key={fa.label}>
-              <p className="text-[11px] font-semibold text-zinc-400 mb-0.5">{fa.icon} {fa.label}</p>
-              <p className="text-xs text-zinc-300 leading-relaxed">{fa.text}</p>
+              <p className="text-[11px] font-semibold text-slate-500 mb-0.5">{fa.icon} {fa.label}</p>
+              <p className="text-xs text-slate-700 leading-relaxed">{fa.text}</p>
             </div>
           ))}
         </div>
       )}
 
       <div className="flex items-center gap-2 mt-2">
-        <span className="text-[11px] text-zinc-600">{expanded ? '접기' : '응급처치 보기'}</span>
-        <span className="text-[11px] text-zinc-600">{expanded ? '▲' : '▼'}</span>
+        <span className="text-[11px] text-slate-400">{expanded ? '접기' : '응급처치 보기'}</span>
+        <span className="text-[11px] text-slate-400">{expanded ? '▲' : '▼'}</span>
         {onSpeak && (
           <span
             role="button"
@@ -158,7 +158,7 @@ function AISearchResultCard({ item, onSpeak }: { item: AISearchResult; onSpeak?:
               const fa = item.first_aid_summary;
               onSpeak(`${item.name_ko}. 흡입 시: ${fa.inhalation}. 피부 접촉 시: ${fa.skin}. 눈 접촉 시: ${fa.eye}. 섭취 시: ${fa.ingestion}`);
             }}
-            className="ml-auto text-[11px] text-blue-400 hover:text-blue-300"
+            className="ml-auto text-[11px] text-blue-600 hover:text-blue-700"
           >
             🔊 읽기
           </span>
@@ -174,22 +174,22 @@ function AIEstimationCard({ item, index, onNameClick }: {
   onNameClick: (name: string) => void;
 }) {
   return (
-    <div className="rounded-2xl bg-zinc-800/80 ring-1 ring-zinc-700/60 p-4 space-y-3">
+    <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-3 shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="shrink-0 w-5 h-5 rounded-full bg-zinc-700 flex items-center justify-center text-[11px] font-bold text-zinc-400">
+          <span className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[11px] font-bold text-slate-500">
             {index + 1}
           </span>
           <button
             onClick={() => onNameClick(item.chemical_name)}
-            className="font-semibold text-zinc-100 text-sm hover:text-blue-300 transition-colors text-left leading-snug"
+            className="font-semibold text-slate-800 text-sm hover:text-blue-600 transition-colors text-left leading-snug"
           >
             {item.chemical_name}
           </button>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {item.cas_number && (
-            <span className="rounded-full bg-blue-500/10 ring-1 ring-blue-500/30 px-2 py-0.5 text-[11px] text-blue-300 font-mono hidden sm:inline">
+            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-[11px] text-sky-700 font-mono hidden sm:inline">
               {item.cas_number}
             </span>
           )}
@@ -199,13 +199,13 @@ function AIEstimationCard({ item, index, onNameClick }: {
         </div>
       </div>
 
-      <p className="text-xs text-zinc-400 leading-relaxed">{item.reasoning}</p>
+      <p className="text-xs text-slate-500 leading-relaxed">{item.reasoning}</p>
 
       {item.immediate_actions.length > 0 && (
-        <div className="rounded-xl bg-amber-500/5 ring-1 ring-amber-500/20 p-3 space-y-1.5">
-          <p className="text-[11px] font-semibold text-amber-400 uppercase tracking-wide">즉각 조치</p>
+        <div className="rounded-xl bg-amber-50/70 border border-amber-100 p-3 space-y-1.5">
+          <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">즉각 조치</p>
           {item.immediate_actions.map((action, i) => (
-            <p key={i} className="text-xs text-zinc-300 flex gap-2">
+            <p key={i} className="text-xs text-slate-700 flex gap-2">
               <span className="text-amber-500 shrink-0">&bull;</span>
               {action}
             </p>
@@ -219,13 +219,13 @@ function AIEstimationCard({ item, index, onNameClick }: {
 function GuideSection({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl bg-zinc-800/80 ring-1 ring-zinc-700/60 overflow-hidden">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2.5 px-4 py-3 text-left hover:bg-zinc-700/40 transition-colors">
+    <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2.5 px-4 py-3 text-left hover:bg-slate-50 transition-colors">
         <span className="text-base shrink-0">{icon}</span>
-        <p className="text-sm font-semibold text-zinc-200 flex-1">{title}</p>
-        <span className="text-zinc-500 text-xs shrink-0">{open ? '▲' : '▼'}</span>
+        <p className="text-sm font-semibold text-slate-700 flex-1">{title}</p>
+        <span className="text-slate-400 text-xs shrink-0">{open ? '▲' : '▼'}</span>
       </button>
-      {open && <div className="px-4 pb-4 space-y-2 border-t border-zinc-700/40 pt-3">{children}</div>}
+      {open && <div className="px-4 pb-4 space-y-2 border-t border-slate-100 pt-3">{children}</div>}
     </div>
   );
 }
@@ -233,10 +233,10 @@ function GuideSection({ icon, title, children }: { icon: string; title: string; 
 function GuideBullet({ text, sub }: { text: string; sub?: string }) {
   return (
     <div className="flex gap-2">
-      <span className="text-amber-500 shrink-0 mt-0.5 text-xs">&bull;</span>
+      <span className="text-blue-500 shrink-0 mt-0.5 text-xs">&bull;</span>
       <div>
-        <p className="text-xs text-zinc-300 leading-relaxed">{text}</p>
-        {sub && <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5">{sub}</p>}
+        <p className="text-xs text-slate-700 leading-relaxed">{text}</p>
+        {sub && <p className="text-[11px] text-slate-400 leading-relaxed mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -246,8 +246,8 @@ function FieldResponseGuide() {
   return (
     <div className="space-y-2">
       <div className="px-1 pb-1">
-        <p className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">화학물질 사고 현장대응 가이드</p>
-        <p className="text-[10px] text-zinc-600 mt-0.5">물질명을 검색하거나, 아래 가이드를 참고하세요</p>
+        <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">화학물질 사고 현장대응 가이드</p>
+        <p className="text-[10px] text-slate-400 mt-0.5">물질명을 검색하거나, 아래 가이드를 참고하세요</p>
       </div>
 
       <GuideSection icon="🛡" title="1. 현장 접근 및 안전 확보">
@@ -261,14 +261,14 @@ function FieldResponseGuide() {
       <GuideSection icon="🧰" title="2. 개인보호장비(PPE) 선택">
         <div className="grid grid-cols-2 gap-2">
           {[
-            { level: 'A', color: 'text-red-400 bg-red-500/10 ring-red-500/30', desc: '완전 밀폐형 화학복 + SCBA\n미지의 물질, 고농도 독성 가스, IDLH 환경' },
-            { level: 'B', color: 'text-amber-400 bg-amber-500/10 ring-amber-500/30', desc: 'SCBA + 비밀폐형 화학복\n호흡 위험은 높으나 피부 흡수 위험 낮을 때' },
-            { level: 'C', color: 'text-blue-400 bg-blue-500/10 ring-blue-500/30', desc: '공기정화식 마스크 + 화학복\n물질 확인됨, 농도 측정 가능 시' },
-            { level: 'D', color: 'text-zinc-400 bg-zinc-700/50 ring-zinc-600/50', desc: '일반 작업복\n화학 위험 없는 구역에서만' },
+            { level: 'A', color: 'text-rose-700 bg-rose-50 border-rose-200', desc: '완전 밀폐형 화학복 + SCBA\n미지의 물질, 고농도 독성 가스, IDLH 환경' },
+            { level: 'B', color: 'text-amber-700 bg-amber-50 border-amber-200', desc: 'SCBA + 비밀폐형 화학복\n호흡 위험은 높으나 피부 흡수 위험 낮을 때' },
+            { level: 'C', color: 'text-blue-700 bg-blue-50 border-blue-200', desc: '공기정화식 마스크 + 화학복\n물질 확인됨, 농도 측정 가능 시' },
+            { level: 'D', color: 'text-slate-600 bg-slate-50 border-slate-200', desc: '일반 작업복\n화학 위험 없는 구역에서만' },
           ].map((ppe) => (
-            <div key={ppe.level} className={`rounded-xl ring-1 p-2.5 ${ppe.color}`}>
+            <div key={ppe.level} className={`rounded-xl border p-2.5 ${ppe.color}`}>
               <p className="text-xs font-bold">Level {ppe.level}</p>
-              <p className="text-[10px] text-zinc-400 leading-relaxed mt-1 whitespace-pre-line">{ppe.desc}</p>
+              <p className="text-[10px] text-slate-500 leading-relaxed mt-1 whitespace-pre-line">{ppe.desc}</p>
             </div>
           ))}
         </div>
@@ -387,7 +387,6 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
     if (!q) { setResults([]); setAiResults([]); return; }
 
     timerRef.current = setTimeout(async () => {
-      // Abort previous AI search
       if (abortRef.current) abortRef.current.abort();
       const abort = new AbortController();
       abortRef.current = abort;
@@ -396,7 +395,6 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
       setAiLoading(true);
       setAiResults([]);
 
-      // Local DB search
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
         if (res.ok) {
@@ -406,7 +404,6 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
       } catch { /* ignore */ }
       setLoading(false);
 
-      // AI search (always runs in parallel conceptually, starts after local finishes for UX)
       try {
         const res = await fetch('/api/search-ai', {
           method: 'POST',
@@ -448,13 +445,13 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
     <div className="flex flex-col gap-3 h-full">
       <div className="relative flex gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-base pointer-events-none">&#128269;</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">&#128269;</span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="물질명, CAS 번호, UN 번호..."
-            className="w-full rounded-2xl border border-zinc-700/60 bg-zinc-900 pl-9 pr-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-2xl border border-slate-200 bg-white pl-9 pr-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"
           />
         </div>
         <button
@@ -462,10 +459,10 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
             if (voice.listening) { voice.stopListening(); }
             else { voice.startListening((text) => setQuery(text)); }
           }}
-          className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+          className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-sm ${
             voice.listening
-              ? 'bg-red-500/20 ring-2 ring-red-500/50 animate-pulse'
-              : 'bg-zinc-800 ring-1 ring-zinc-700 hover:bg-zinc-700'
+              ? 'bg-rose-50 ring-2 ring-rose-300 animate-pulse'
+              : 'bg-white border border-slate-200 hover:bg-slate-50'
           }`}
           title="음성 검색"
         >
@@ -474,7 +471,7 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
         {voice.speaking && (
           <button
             onClick={() => voice.stopSpeaking()}
-            className="shrink-0 w-12 h-12 rounded-2xl bg-blue-500/20 ring-2 ring-blue-500/50 flex items-center justify-center animate-pulse"
+            className="shrink-0 w-12 h-12 rounded-2xl bg-blue-50 ring-2 ring-blue-300 flex items-center justify-center animate-pulse"
             title="읽기 중지"
           >
             <span className="text-lg">🔇</span>
@@ -482,32 +479,28 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
         )}
       </div>
       <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pb-2">
-        {/* Loading state */}
         {loading && <><SkeletonCard /><SkeletonCard /><SkeletonCard /></>}
 
-        {/* 검색 전: 현장대응 가이드 */}
         {!loading && !aiLoading && !query.trim() && <FieldResponseGuide />}
 
-        {/* Local DB results */}
         {!loading && results.length > 0 && (
           <>
-            <p className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider px-1">검증 데이터</p>
+            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider px-1">검증 데이터</p>
             {results.map((r) => (
               <SearchResultCard key={r.id} result={r} onClick={() => router.push(`/chemical/${r.id}`)} />
             ))}
           </>
         )}
 
-        {/* AI results section */}
         {query.trim() && (aiLoading || aiResults.length > 0) && (
           <>
             <div className="flex items-center gap-2 px-1 mt-2">
-              <p className="text-[11px] text-amber-400/80 font-semibold uppercase tracking-wider">AI 검색 결과</p>
+              <p className="text-[11px] text-amber-600 font-semibold uppercase tracking-wider">AI 검색 결과</p>
               {aiLoading && (
-                <span className="inline-block w-3 h-3 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin" />
+                <span className="inline-block w-3 h-3 border-2 border-amber-200 border-t-amber-500 rounded-full animate-spin" />
               )}
             </div>
-            <p className="text-[10px] text-zinc-600 px-1 -mt-1">AI 생성 참고용 &middot; 공식 MSDS 확인 필요</p>
+            <p className="text-[10px] text-slate-400 px-1 -mt-1">AI 생성 참고용 &middot; 공식 MSDS 확인 필요</p>
             {aiLoading && aiResults.length === 0 && <><SkeletonCard /><SkeletonCard /></>}
             {aiResults.map((item, i) => (
               <AISearchResultCard key={`${item.cas_number}-${i}`} item={item} onSpeak={voice.speak} />
@@ -515,7 +508,6 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
           </>
         )}
 
-        {/* No results at all */}
         {!loading && !aiLoading && query.trim() && results.length === 0 && aiResults.length === 0 && (
           <EmptyState icon="&#128270;" text="검색 결과가 없습니다" />
         )}
@@ -581,25 +573,25 @@ function WindowB({ onSearchName }: { onSearchName: (name: string) => void }) {
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSubmit(); } }}
           placeholder="예시: 창고에서 노란 연기 발생, 눈이 따갑고 숨쉬기 힘들며 달걀 썩는 냄새가 남..."
           rows={4}
-          className="w-full rounded-2xl border border-zinc-700/60 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none shadow-sm"
         />
         <button
           onClick={handleSubmit}
           disabled={loading || !description.trim()}
-          className="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          className="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <span className="inline-block w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              AI 분석 중...
+              분석 중...
             </span>
-          ) : '🤖 AI 추정 시작'}
+          ) : '추정 시작'}
         </button>
       </div>
 
       {error && (
-        <div className="rounded-2xl bg-red-500/8 ring-1 ring-red-500/25 px-4 py-3">
-          <p className="text-xs text-red-400">{error}</p>
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3">
+          <p className="text-xs text-rose-600">{error}</p>
         </div>
       )}
 
@@ -632,64 +624,64 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col">
 
       {/* 헤더 */}
-      <header className="shrink-0 sticky top-0 z-20 bg-zinc-950/95 backdrop-blur border-b border-zinc-800/80">
+      <header className="shrink-0 sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-900/40">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md">
             <span className="text-white font-black text-sm">CG</span>
           </div>
           <div>
-            <h1 className="text-base font-bold text-zinc-100 leading-tight tracking-tight">ChemGuard</h1>
-            <p className="text-[10px] text-zinc-500 leading-none mt-0.5">화학물질 사고 대응 플랫폼</p>
+            <h1 className="text-base font-bold text-slate-900 leading-tight tracking-tight">ChemGuard</h1>
+            <p className="text-[10px] text-slate-400 leading-none mt-0.5">화학물질 사고 대응 플랫폼</p>
           </div>
           <div className="flex-1" />
           <button
             onClick={() => router.push('/vision')}
-            className="flex items-center gap-1.5 rounded-xl bg-violet-600/15 ring-1 ring-violet-500/30 px-2.5 py-2 hover:bg-violet-600/25 transition-colors"
+            className="flex items-center gap-1.5 rounded-xl bg-violet-50 border border-violet-200 px-2.5 py-2 hover:bg-violet-100 transition-colors"
           >
             <span className="text-sm">📸</span>
-            <span className="text-xs font-semibold text-violet-300 hidden sm:inline">식별</span>
+            <span className="text-xs font-semibold text-violet-700 hidden sm:inline">식별</span>
           </button>
           <button
             onClick={() => router.push('/map')}
-            className="flex items-center gap-1.5 rounded-xl bg-cyan-600/15 ring-1 ring-cyan-500/30 px-2.5 py-2 hover:bg-cyan-600/25 transition-colors"
+            className="flex items-center gap-1.5 rounded-xl bg-teal-50 border border-teal-200 px-2.5 py-2 hover:bg-teal-100 transition-colors"
           >
             <span className="text-sm">🗺️</span>
-            <span className="text-xs font-semibold text-cyan-300 hidden sm:inline">지도</span>
+            <span className="text-xs font-semibold text-teal-700 hidden sm:inline">지도</span>
           </button>
           <button
             onClick={() => router.push('/zone')}
-            className="flex items-center gap-1.5 rounded-xl bg-red-600/15 ring-1 ring-red-500/30 px-2.5 py-2 hover:bg-red-600/25 transition-colors"
+            className="flex items-center gap-1.5 rounded-xl bg-rose-50 border border-rose-200 px-2.5 py-2 hover:bg-rose-100 transition-colors"
           >
             <span className="text-sm">📷</span>
-            <span className="text-xs font-semibold text-red-300 hidden sm:inline">Zone</span>
+            <span className="text-xs font-semibold text-rose-700 hidden sm:inline">Zone</span>
           </button>
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-1.5 rounded-xl bg-amber-600/15 ring-1 ring-amber-500/30 px-2.5 py-2 hover:bg-amber-600/25 transition-colors"
+            className="flex items-center gap-1.5 rounded-xl bg-amber-50 border border-amber-200 px-2.5 py-2 hover:bg-amber-100 transition-colors"
           >
             <span className="text-sm">📋</span>
-            <span className="text-xs font-semibold text-amber-300 hidden sm:inline">상황판</span>
+            <span className="text-xs font-semibold text-amber-700 hidden sm:inline">상황판</span>
           </button>
         </div>
       </header>
 
       {/* 탭 바 */}
-      <div className="shrink-0 sticky top-[57px] z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60">
+      <div className="shrink-0 sticky top-[57px] z-10 bg-white/95 backdrop-blur border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 flex">
           {[
             { key: 'a', icon: '🧪', label: '물질 검색', sub: '물질명 · CAS · UN' },
-            { key: 'b', icon: '🤖', label: 'AI 추정', sub: '증상·상황 설명' },
+            { key: 'b', icon: '🔬', label: '증상 추정', sub: '증상·상황 설명' },
           ].map(({ key, icon, label, sub }) => (
             <button
               key={key}
               onClick={() => setTab(key as 'a' | 'b')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm transition-all border-b-2 ${
                 tab === key
-                  ? 'border-blue-500 text-blue-400'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                  ? 'border-blue-600 text-blue-700'
+                  : 'border-transparent text-slate-400 hover:text-slate-600'
               }`}
             >
               <span className="text-base">{icon}</span>
@@ -705,24 +697,21 @@ export default function Home() {
 
       {/* 데스크톱: 2분할 / 모바일: 탭 전환 */}
       <main className="flex-1 w-full max-w-4xl mx-auto flex overflow-hidden">
-        {/* 창구 A */}
         <section className={`flex-1 min-w-0 flex flex-col p-4 ${tab !== 'a' ? 'hidden md:flex' : ''}`}>
           <WindowA query={searchQuery} setQuery={setSearchQuery} />
         </section>
 
-        {/* 구분선 (데스크톱) */}
-        <div className="hidden md:block w-px bg-zinc-800/80 my-4" />
+        <div className="hidden md:block w-px bg-slate-200 my-4" />
 
-        {/* 창구 B */}
         <section className={`flex-1 min-w-0 flex flex-col p-4 ${tab !== 'b' ? 'hidden md:flex' : ''}`}>
           <WindowB onSearchName={handleSearchFromEstimation} />
         </section>
       </main>
 
       {/* 푸터 */}
-      <footer className="shrink-0 border-t border-zinc-800/60 py-4 px-4 space-y-0.5">
-        <p className="text-center text-[11px] text-zinc-600 tracking-wide">대한화학손상연구회</p>
-        <p className="text-center text-[10px] text-zinc-700">만든이 정회원 정기홍</p>
+      <footer className="shrink-0 border-t border-slate-200 py-4 px-4 space-y-0.5 bg-white">
+        <p className="text-center text-[11px] text-slate-400 tracking-wide">대한화학손상연구회</p>
+        <p className="text-center text-[10px] text-slate-300">만든이 정회원 정기홍</p>
       </footer>
 
     </div>

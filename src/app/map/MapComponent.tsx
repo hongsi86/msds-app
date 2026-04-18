@@ -76,21 +76,19 @@ export default function MapComponent() {
       zoomControl: false,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 19,
     }).addTo(map);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // Click to set incident location
     map.on('click', (e: L.LeafletMouseEvent) => {
       setIncidentPos([e.latlng.lat, e.latlng.lng]);
     });
 
     mapRef.current = map;
 
-    // Get user location
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const latlng: [number, number] = [pos.coords.latitude, pos.coords.longitude];
@@ -98,13 +96,10 @@ export default function MapComponent() {
         setIncidentPos(latlng);
         map.setView(latlng, 15);
       },
-      () => {
-        // Default to Seoul if geolocation fails
-      },
+      () => {},
       { enableHighAccuracy: true }
     );
 
-    // Watch user position
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         setUserPos([pos.coords.latitude, pos.coords.longitude]);
@@ -125,7 +120,6 @@ export default function MapComponent() {
     const map = mapRef.current;
     if (!map || !incidentPos) return;
 
-    // Clear previous
     circlesRef.current.forEach((c) => c.remove());
     circlesRef.current = [];
     if (markerRef.current) markerRef.current.remove();
@@ -133,11 +127,10 @@ export default function MapComponent() {
 
     const zone = ERG_ZONES[chemical] ?? ERG_ZONES['기본값'];
 
-    // Draw COLD → WARM → HOT (so HOT is on top)
     const zones = [
-      { radius: zone.cold, color: '#eab308', fillColor: '#eab30830', label: 'COLD' },
-      { radius: zone.warm, color: '#f97316', fillColor: '#f9731630', label: 'WARM' },
-      { radius: zone.hot, color: '#ef4444', fillColor: '#ef444440', label: 'HOT' },
+      { radius: zone.cold, color: '#ca8a04', fillColor: '#ca8a0425', label: 'COLD' },
+      { radius: zone.warm, color: '#ea580c', fillColor: '#ea580c30', label: 'WARM' },
+      { radius: zone.hot, color: '#dc2626', fillColor: '#dc262640', label: 'HOT' },
     ];
 
     zones.forEach((z) => {
@@ -153,9 +146,8 @@ export default function MapComponent() {
       circlesRef.current.push(circle);
     });
 
-    // Incident marker
     const incidentIcon = L.divIcon({
-      html: '<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px rgba(239,68,68,0.8)"></div>',
+      html: '<div style="background:#dc2626;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px rgba(220,38,38,0.6)"></div>',
       iconSize: [16, 16],
       iconAnchor: [8, 8],
       className: '',
@@ -163,14 +155,13 @@ export default function MapComponent() {
     markerRef.current = L.marker(incidentPos, { icon: incidentIcon }).addTo(map);
     markerRef.current.bindTooltip(`⚠ 사고 지점 · ${chemical}`, { direction: 'top', offset: [0, -10] });
 
-    // Wind direction arrow
-    const windRad = ((windDir + 180) * Math.PI) / 180; // downwind
+    const windRad = ((windDir + 180) * Math.PI) / 180;
     const arrowLen = zone.cold * 1.2;
     const endLat = incidentPos[0] + (arrowLen / 111320) * Math.cos(windRad);
     const endLng = incidentPos[1] + (arrowLen / (111320 * Math.cos((incidentPos[0] * Math.PI) / 180))) * Math.sin(windRad);
     windArrowRef.current = L.polyline(
       [incidentPos, [endLat, endLng]],
-      { color: '#06b6d4', weight: 3, dashArray: '8,6', opacity: 0.7 }
+      { color: '#0891b2', weight: 3, dashArray: '8,6', opacity: 0.7 }
     ).addTo(map);
     windArrowRef.current.bindTooltip('풍하방향 →', { permanent: false });
 
@@ -188,14 +179,13 @@ export default function MapComponent() {
     if (userMarkerRef.current) userMarkerRef.current.remove();
     userMarkerRef.current = L.circleMarker(userPos, {
       radius: 8,
-      color: '#3b82f6',
-      fillColor: '#3b82f6',
+      color: '#2563eb',
+      fillColor: '#2563eb',
       fillOpacity: 1,
       weight: 3,
     }).addTo(map);
     userMarkerRef.current.bindTooltip('내 위치', { direction: 'top', offset: [0, -10] });
 
-    // Calculate distance to incident
     if (incidentPos) {
       const dist = map.distance(L.latLng(userPos[0], userPos[1]), L.latLng(incidentPos[0], incidentPos[1]));
       setUserDistance(Math.round(dist));
@@ -206,28 +196,28 @@ export default function MapComponent() {
 
   const getMyZone = () => {
     if (userDistance === null) return null;
-    if (userDistance <= zone.hot) return { zone: 'HOT', color: '#ef4444' };
-    if (userDistance <= zone.warm) return { zone: 'WARM', color: '#f97316' };
-    if (userDistance <= zone.cold) return { zone: 'COLD', color: '#eab308' };
-    return { zone: 'SAFE', color: '#22c55e' };
+    if (userDistance <= zone.hot) return { zone: 'HOT', color: '#dc2626' };
+    if (userDistance <= zone.warm) return { zone: 'WARM', color: '#ea580c' };
+    if (userDistance <= zone.cold) return { zone: 'COLD', color: '#ca8a04' };
+    return { zone: 'SAFE', color: '#16a34a' };
   };
 
   const myZone = getMyZone();
 
   return (
-    <div className="fixed inset-0 bg-zinc-950 flex flex-col">
+    <div className="fixed inset-0 bg-slate-50 flex flex-col">
       {/* Map */}
       <div ref={mapContainerRef} className="flex-1 z-0" />
 
       {/* Top overlay */}
       <div className="absolute top-0 left-0 right-0 z-[1000] safe-area-top">
         <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-          <a href="/" className="w-9 h-9 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white text-lg no-underline">
+          <a href="/" className="w-9 h-9 rounded-full bg-white/90 backdrop-blur shadow-md flex items-center justify-center text-slate-600 text-lg no-underline border border-slate-200">
             ←
           </a>
           <div className="flex-1" />
           {myZone && userDistance !== null && (
-            <div className="rounded-full px-4 py-1.5 backdrop-blur font-bold text-sm" style={{ backgroundColor: `${myZone.color}33`, color: myZone.color, border: `2px solid ${myZone.color}` }}>
+            <div className="rounded-full px-4 py-1.5 backdrop-blur font-bold text-sm bg-white/90 shadow-md border" style={{ color: myZone.color, borderColor: myZone.color }}>
               {myZone.zone} · {userDistance}m
             </div>
           )}
@@ -235,28 +225,28 @@ export default function MapComponent() {
       </div>
 
       {/* Bottom panel */}
-      <div className="shrink-0 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800 z-[1000] safe-area-bottom">
+      <div className="shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 z-[1000] safe-area-bottom">
         <div className="px-4 pt-3 pb-4 space-y-3 max-w-lg mx-auto">
           {/* Chemical selector */}
           <button
             onClick={() => setShowChemList(!showChemList)}
-            className="w-full rounded-xl bg-zinc-800 ring-1 ring-zinc-700 px-3 py-2.5 text-left flex items-center gap-2"
+            className="w-full rounded-xl bg-white border border-slate-200 px-3 py-2.5 text-left flex items-center gap-2 shadow-sm"
           >
             <span className="text-base">🧪</span>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-zinc-500">선택 물질</p>
-              <p className="text-sm font-semibold text-zinc-100 truncate">{chemical}</p>
+              <p className="text-[10px] text-slate-400">선택 물질</p>
+              <p className="text-sm font-semibold text-slate-800 truncate">{chemical}</p>
             </div>
-            <span className="text-zinc-500 text-xs">{showChemList ? '▲' : '▼'}</span>
+            <span className="text-slate-400 text-xs">{showChemList ? '▲' : '▼'}</span>
           </button>
 
           {showChemList && (
-            <div className="rounded-xl bg-zinc-800 ring-1 ring-zinc-700 p-2 max-h-32 overflow-y-auto space-y-0.5">
+            <div className="rounded-xl bg-white border border-slate-200 p-2 max-h-32 overflow-y-auto space-y-0.5 shadow-sm">
               {CHEMICAL_LIST.map((c) => (
                 <button
                   key={c}
                   onClick={() => { setChemical(c); setShowChemList(false); }}
-                  className={`w-full text-left rounded-lg px-3 py-1.5 text-xs transition-colors ${chemical === c ? 'bg-blue-600/20 text-blue-300' : 'text-zinc-300 hover:bg-zinc-700'}`}
+                  className={`w-full text-left rounded-lg px-3 py-1.5 text-xs transition-colors ${chemical === c ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
                   {c}
                 </button>
@@ -266,15 +256,15 @@ export default function MapComponent() {
 
           {/* Wind direction */}
           <div>
-            <p className="text-[11px] text-zinc-500 font-semibold mb-1.5">💨 바람 방향</p>
+            <p className="text-[11px] text-slate-500 font-semibold mb-1.5">💨 바람 방향</p>
             <div className="grid grid-cols-8 gap-1">
               {WIND_DIRS.map((w) => (
                 <button
                   key={w.label}
                   onClick={() => setWindDir(w.deg)}
                   className={`rounded-lg py-1.5 text-center transition-all ${windDir === w.deg
-                    ? 'bg-cyan-600/25 ring-1 ring-cyan-500/50 text-cyan-300'
-                    : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
+                    ? 'bg-teal-50 ring-1 ring-teal-300 text-teal-700'
+                    : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
                   }`}
                 >
                   <p className="text-[11px] font-bold">{w.label}</p>
@@ -285,27 +275,27 @@ export default function MapComponent() {
 
           {/* Zone distances */}
           <div className="grid grid-cols-3 gap-1.5">
-            <div className="rounded-xl bg-red-500/10 ring-1 ring-red-500/30 p-2 text-center">
-              <p className="text-[10px] text-red-400 font-semibold">HOT</p>
-              <p className="text-sm font-bold text-red-300">{zone.hot}m</p>
+            <div className="rounded-xl bg-rose-50 border border-rose-200 p-2 text-center">
+              <p className="text-[10px] text-rose-600 font-semibold">HOT</p>
+              <p className="text-sm font-bold text-rose-700">{zone.hot}m</p>
             </div>
-            <div className="rounded-xl bg-amber-500/10 ring-1 ring-amber-500/30 p-2 text-center">
-              <p className="text-[10px] text-amber-400 font-semibold">WARM</p>
-              <p className="text-sm font-bold text-amber-300">{zone.warm}m</p>
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-center">
+              <p className="text-[10px] text-amber-600 font-semibold">WARM</p>
+              <p className="text-sm font-bold text-amber-700">{zone.warm}m</p>
             </div>
-            <div className="rounded-xl bg-blue-500/10 ring-1 ring-blue-500/30 p-2 text-center">
-              <p className="text-[10px] text-blue-400 font-semibold">COLD</p>
-              <p className="text-sm font-bold text-blue-300">{zone.cold}m</p>
+            <div className="rounded-xl bg-sky-50 border border-sky-200 p-2 text-center">
+              <p className="text-[10px] text-sky-600 font-semibold">COLD</p>
+              <p className="text-sm font-bold text-sky-700">{zone.cold}m</p>
             </div>
           </div>
 
           {zone.note && (
-            <div className="rounded-xl bg-amber-500/8 ring-1 ring-amber-500/25 px-3 py-2">
-              <p className="text-[11px] text-amber-400">⚠ {zone.note}</p>
+            <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2">
+              <p className="text-[11px] text-amber-700">⚠ {zone.note}</p>
             </div>
           )}
 
-          <p className="text-[10px] text-zinc-600 text-center">지도를 탭하여 사고 지점 설정 · GPS로 내 위치 자동 추적</p>
+          <p className="text-[10px] text-slate-400 text-center">지도를 탭하여 사고 지점 설정 · GPS로 내 위치 자동 추적</p>
         </div>
       </div>
     </div>
