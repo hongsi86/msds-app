@@ -629,11 +629,7 @@ export default function Home() {
       {/* 헤더 */}
       <header className="shrink-0 sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center gap-3">
-          <img src="/logo.png" alt="ChemGuard" className="w-9 h-9 rounded-xl object-contain" />
-          <div>
-            <h1 className="text-base font-bold text-slate-900 leading-tight tracking-tight">ChemGuard</h1>
-            <p className="text-[10px] text-slate-400 leading-none mt-0.5">화학물질 사고 대응 플랫폼</p>
-          </div>
+          <img src="/logo.png" alt="대한화학손상연구회" className="h-10 object-contain" />
           <div className="flex-1" />
           <button
             onClick={() => router.push('/vision')}
