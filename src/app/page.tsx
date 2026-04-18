@@ -629,9 +629,7 @@ export default function Home() {
       {/* 헤더 */}
       <header className="shrink-0 sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md">
-            <span className="text-white font-black text-sm">CG</span>
-          </div>
+          <img src="/logo.png" alt="ChemGuard" className="w-9 h-9 rounded-xl object-contain" />
           <div>
             <h1 className="text-base font-bold text-slate-900 leading-tight tracking-tight">ChemGuard</h1>
             <p className="text-[10px] text-slate-400 leading-none mt-0.5">화학물질 사고 대응 플랫폼</p>
