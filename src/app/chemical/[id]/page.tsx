@@ -6,6 +6,7 @@ import type { Chemical, RoleType } from '@/lib/types';
 import { getChemicalById } from '@/lib/chemicals-data';
 
 const ROLES: { key: RoleType; label: string; color: string; activeColor: string }[] = [
+  { key: 'RES', label: '🚒 RES 구조대원', color: 'text-red-700 border-red-300', activeColor: 'bg-red-50 border-red-300 text-red-700' },
   { key: 'EMS', label: '🚑 EMS 구급대원', color: 'text-rose-700 border-rose-300', activeColor: 'bg-rose-50 border-rose-300 text-rose-700' },
   { key: 'MED', label: '🏥 MED 의료진', color: 'text-blue-700 border-blue-300', activeColor: 'bg-blue-50 border-blue-300 text-blue-700' },
   { key: 'DM', label: '🎖️ DM 재난관리자', color: 'text-amber-700 border-amber-300', activeColor: 'bg-amber-50 border-amber-300 text-amber-700' },
@@ -42,6 +43,95 @@ function RouteCard({ label, text }: { label: string; text?: string }) {
     <div className="rounded-lg bg-slate-50 border border-slate-100 p-3 mb-2">
       <p className="text-xs font-semibold text-slate-500 mb-1">{label}</p>
       <p className="text-sm text-slate-700">{text}</p>
+    </div>
+  );
+}
+
+function RESPanel({ protocol }: { protocol: Chemical['res_protocol'] }) {
+  const dist = protocol.erg_distance;
+  return (
+    <div className="space-y-4">
+      {/* PPE + ERG 지침 */}
+      <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500">PPE</span>
+          <span className="text-2xl font-bold text-red-700">레벨 {protocol.ppe_level}</span>
+        </div>
+        {protocol.erg_guide_number && (
+          <div className="text-right">
+            <p className="text-xs text-slate-500">ERG 지침</p>
+            <p className="text-sm font-mono font-bold text-red-700">{protocol.erg_guide_number}</p>
+          </div>
+        )}
+      </div>
+
+      {/* 물 반응성 경고 배너 */}
+      {protocol.water_reactive && (
+        <div className="rounded-lg bg-amber-50 border-2 border-amber-300 p-3">
+          <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">💧 물 반응성 주의</p>
+          {protocol.water_reaction_note && (
+            <p className="text-sm text-amber-900">{protocol.water_reaction_note}</p>
+          )}
+        </div>
+      )}
+
+      {/* 이격거리표 */}
+      {dist && (
+        <div>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">📐 이격거리 (ERG2024 표1)</p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
+              <p className="font-semibold text-slate-600 mb-1">소량 누출 (≤208L)</p>
+              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.small_spill}m</span></p>
+              <p className="text-slate-500 mt-1">방호 낮 {dist.protective_action_km.small_day}km</p>
+              <p className="text-slate-500">방호 밤 {dist.protective_action_km.small_night}km</p>
+            </div>
+            <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+              <p className="font-semibold text-red-700 mb-1">대량 누출 (&gt;208L)</p>
+              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.large_spill}m</span></p>
+              <p className="text-red-600 mt-1">방호 낮 {dist.protective_action_km.large_day}km</p>
+              <p className="text-red-700 font-semibold">방호 밤 {dist.protective_action_km.large_night}km</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Section title="🧭 현장 접근 원칙" items={protocol.scene_approach} />
+      <Section title="🧯 화재 진압 전술" items={protocol.fire_tactics} />
+      <Section title="🚰 누출 통제" items={protocol.leak_control} />
+
+      <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">🚿 권장 제독</p>
+        <p className="text-sm text-slate-700">{protocol.decon_recommendation}</p>
+      </div>
+
+      {/* BLEVE */}
+      {protocol.bleve_risk && (
+        <div className="rounded-lg bg-orange-50 border-2 border-orange-300 p-3">
+          <p className="text-xs font-bold text-orange-800 uppercase tracking-wider mb-1">💥 BLEVE 위험</p>
+          {protocol.bleve_evacuation_m && (
+            <p className="text-sm text-orange-900">
+              가연성 액화가스 탱크 화재 시 권장 대피거리 <span className="font-bold">{protocol.bleve_evacuation_m}m 이상</span>
+            </p>
+          )}
+        </div>
+      )}
+
+      <Section title="📞 수보 시 전달 정보" items={protocol.resource_request} />
+
+      {protocol.absolute_prohibitions.length > 0 && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+          <p className="text-xs font-semibold text-red-700 uppercase tracking-wider mb-2">⛔ 절대 금지</p>
+          <ul className="space-y-1">
+            {protocol.absolute_prohibitions.map((item, i) => (
+              <li key={i} className="text-sm text-red-700 flex gap-2">
+                <span className="shrink-0">✕</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -159,7 +249,7 @@ export default function ChemicalDetailPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [chemical, setChemical] = useState<Chemical | null>(null);
-  const [activeRole, setActiveRole] = useState<RoleType>('EMS');
+  const [activeRole, setActiveRole] = useState<RoleType>('RES');
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
@@ -262,6 +352,7 @@ export default function ChemicalDetailPage() {
           <h2 className={`text-sm font-semibold mb-4 ${activeRoleMeta.color.split(' ')[0]}`}>
             {activeRoleMeta.label} 대응 프로토콜
           </h2>
+          {activeRole === 'RES' && <RESPanel protocol={chemical.res_protocol} />}
           {activeRole === 'EMS' && <EMSPanel protocol={chemical.ems_protocol} />}
           {activeRole === 'MED' && <MEDPanel protocol={chemical.med_protocol} />}
           {activeRole === 'DM' && <DMPanel protocol={chemical.dm_protocol} />}

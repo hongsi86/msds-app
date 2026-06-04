@@ -16,6 +16,38 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색 투명한 유성 액체",
     odor: "냄새 없음 (진한 황산), 약한 자극취 (묽은 황산)",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "137",
+      water_reactive: true,
+      water_reaction_note: "물 희석 시 다량 발열 — 다량의 물로 한꺼번에 희석할 것. 소량 물 직접 분사는 비산·증기 발생",
+      scene_approach: [
+        "풍상측·언덕 위에서 접근",
+        "차량은 풍상측 정차, 누출 지점에서 충분히 이격",
+        "ERG 주황색 지침 137(부식성·물반응성 액체) 참조",
+      ],
+      fire_tactics: [
+        "분무 주수로 증기 억제·탱크 냉각",
+        "이산화탄소·분말 소화약제 가능",
+        "직접 강한 물 분사 금지 — 비산 위험",
+      ],
+      leak_control: [
+        "둑쌓기로 하수구·수로 유입 차단",
+        "비활성 흡수재(모래·규조토) 사용",
+        "찰흙·톱밥 금지 (반응)",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물로 20분 이상 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1830 + 누출량(L) + 풍향·풍속",
+        "화학구조대 / 중화제 / 대형 거품차",
+      ],
+      absolute_prohibitions: [
+        "오염자 피부에 직접 중화제(NaHCO3) 도포 금지 — 발열",
+        "SCBA 없이 단독 진입 금지",
+        "찰흙 흡수재 사용 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: [
@@ -214,6 +246,45 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색 기체 (액화 시 무색 액체)",
     odor: "강렬하고 자극적인 특유의 암모니아 냄새",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "125",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 30, large_spill: 150 },
+        protective_action_km: {
+          small_day: 0.1, small_night: 0.2,
+          large_day: 0.8, large_night: 2.3,
+        },
+      },
+      water_reactive: false,
+      water_reaction_note: "물에 잘 녹음 — 분무 주수로 증기 흡수 가능",
+      scene_approach: [
+        "풍상측·언덕 위에서 접근, 저지대 침적 주의",
+        "차량은 풍상측, 누출 지점에서 충분히 이격",
+        "ERG 지침 125 참조 — 가스 누출 시 대량 대피",
+      ],
+      fire_tactics: [
+        "분무 주수로 증기 흡수·확산 차단",
+        "탱크는 직접 가열 부위 냉각",
+        "철수 신호: 안전밸브 소리 변화, 탱크 변색",
+      ],
+      leak_control: [
+        "누출원 차단 우선 (밸브 폐쇄)",
+        "분무 주수 커튼으로 풍하측 차단",
+        "저지대·하수구 침투 방지",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물로 20분 이상 세척, 의복 즉시 제거",
+      bleve_risk: false,
+      resource_request: [
+        "UN1005 + 풍향·풍속 + 누출 형태(액체/가스)",
+        "화학구조대 / 거품차 / 분무 주수 펌프",
+      ],
+      absolute_prohibitions: [
+        "SCBA 없이 단독 진입 금지",
+        "직접 강한 물 분사로 액체 누출원 자극 금지",
+        "밀폐공간 진입 시 농도 측정 없이 진입 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: [
@@ -408,6 +479,46 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "황록색 기체 (액화 시 황록색 액체)",
     odor: "강한 자극취, 표백제 냄새 (매우 저농도에서도 감지 가능)",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "124",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 60, large_spill: 600 },
+        protective_action_km: {
+          small_day: 0.3, small_night: 1.4,
+          large_day: 3.5, large_night: 8.3,
+        },
+      },
+      water_reactive: true,
+      water_reaction_note: "물에 닿으면 HCl·HOCl 발생, 증기 더 위험. 직접 물 분사 금지",
+      scene_approach: [
+        "풍상측·언덕 위에서 접근 — 염소는 공기보다 2.5배 무거움, 저지대 침적",
+        "차량은 풍상측 정차, 누출 지점에서 충분히 이격",
+        "ERG 지침 124 참조 — 풍하측 광역 대피 필요",
+      ],
+      fire_tactics: [
+        "물 분무 커튼으로 증기 확산 차단 (직접 분사 금지)",
+        "이산화탄소·분말 소화약제 가능",
+        "탱크 외부 냉각만 — 직접 물 접촉 금지",
+      ],
+      leak_control: [
+        "누출원 즉시 차단 (밸브 폐쇄, 키트 사용)",
+        "물 분무 커튼으로 풍하측 차단",
+        "용기 누출 시 키트 응급 봉합, 풍상측에서 작업",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물로 20분 이상 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1017 + 누출량(L) + 풍향·풍속·시간대",
+        "화학구조대 / 염소 응급 키트 / 분무 주수 펌프",
+        "풍하 광역 대피 인구·대상",
+      ],
+      absolute_prohibitions: [
+        "물 직접 분사 금지 — 증기 확산 증가",
+        "레벨 A 미만 PPE로 접근 금지",
+        "풍하측·저지대 진입 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: [
@@ -597,6 +708,46 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "무색 기체",
     odor: "저농도: 썩은 달걀 냄새 / 고농도(>150ppm): 후각 마비로 무취처럼 느껴짐",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "117",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 30, large_spill: 400 },
+        protective_action_km: {
+          small_day: 0.1, small_night: 0.5,
+          large_day: 2.4, large_night: 6.3,
+        },
+      },
+      water_reactive: false,
+      scene_approach: [
+        "풍상측 접근 — 공기보다 무거워 저지대·맨홀 침적, 폐쇄공간 절대 금지",
+        "후각 마비 — 저농도(>100ppm)에서 냄새 못 맡음, 농도계 필수",
+        "ERG 지침 117 참조 — 가연성 + 흡입독성",
+      ],
+      fire_tactics: [
+        "탱크 화재 시 분무 주수로 냉각",
+        "이산화탄소·분말 소화약제 사용",
+        "철수 신호: 안전밸브 소리 변화, 가연성 가스 점화 위험",
+      ],
+      leak_control: [
+        "모든 점화원 즉시 제거 (가연성 가스)",
+        "누출원 차단·환기 후 분무 주수로 가스 흡수",
+        "저지대·맨홀·하수구 침투 방지",
+      ],
+      decon_recommendation: "급속 대량 제독 — 호흡 도구 즉시 적용 후 환기 좋은 곳으로 이동",
+      bleve_risk: true,
+      bleve_evacuation_m: 1600,
+      resource_request: [
+        "UN1053 + 농도·풍향·시간대",
+        "화학구조대 / 가스 농도계 / 환기 장비",
+        "폐쇄공간 진입 시 구조용 삼각대·로프",
+      ],
+      absolute_prohibitions: [
+        "SCBA 없이 단독 진입 금지 — 후각으로 위험 판단 금지",
+        "폐쇄공간(맨홀·탱크 내부) 단독 진입 절대 금지",
+        "점화원 휴대 금지 — 가연성 가스",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: [
@@ -796,6 +947,38 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 2,
     appearance: "무색 투명한 액체",
     odor: "특유의 방향족 달콤한 냄새",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "130",
+      water_reactive: false,
+      water_reaction_note: "물에 녹지 않음 — 액체 표면에 떠 화재 확산 가능",
+      scene_approach: [
+        "풍상측 접근, 증기는 공기보다 무거워 저지대 침적",
+        "모든 점화원·정전기 제거 (인화점 4°C)",
+        "ERG 지침 130 참조 — 인화성 액체",
+      ],
+      fire_tactics: [
+        "일반형 거품(AFFF) 또는 알콜 저항성 거품으로 피복",
+        "분무 주수로 탱크 냉각 + 증기 확산 차단",
+        "이산화탄소·분말 소화약제 가능 — 봉화는 비효율",
+      ],
+      leak_control: [
+        "둑쌓기로 확산 방지, 수계 유입 차단",
+        "비활성 흡수재(모래·규조토·질석) 사용",
+        "모든 점화원 제거 + 접지로 정전기 방지",
+      ],
+      decon_recommendation: "기술적 제독 — 비누·세제로 세척 후 다량의 물 헹굼",
+      bleve_risk: false,
+      resource_request: [
+        "UN1294 + 누출량(L) + 화재 여부",
+        "화학구조대 / 거품차 / 흡수재",
+      ],
+      absolute_prohibitions: [
+        "직접 강한 물 분사 금지 — 액체 비산·화재 확산",
+        "점화원·정전기 미차단 상태 진입 금지",
+        "밀폐공간 농도 측정 없이 진입 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: [
@@ -984,6 +1167,38 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색~연한 황색 액체 (발연성)",
     odor: "강한 자극취",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "157",
+      water_reactive: false,
+      water_reaction_note: "물 희석 시 발열·HCl 증기 발생 — 다량의 물 한 번에",
+      scene_approach: [
+        "풍상측 접근 — HCl 증기 확산 주의",
+        "차량은 풍상측 정차, 누출 지점에서 충분히 이격",
+        "ERG 지침 157 참조 — 부식성 액체",
+      ],
+      fire_tactics: [
+        "물 분무 커튼으로 증기 확산 차단",
+        "이산화탄소·분말 소화약제 가능",
+        "탱크는 직접 물 분무로 냉각",
+      ],
+      leak_control: [
+        "둑쌓기로 하수구·수로 유입 차단",
+        "비활성 흡수재(모래·규조토) 사용",
+        "물 분무로 증기 흡수, 액체 직접 분사 금지",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물로 20분 이상 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1789 + 농도·누출량",
+        "화학구조대 / 중화제 / 분무 펌프",
+      ],
+      absolute_prohibitions: [
+        "오염자 피부에 중화제 직접 도포 금지 — 발열",
+        "SCBA 없이 진입 금지",
+        "수계·하수구 유입 방치 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B 화학 보호복 + SCBA", "내산성 장갑 이중 착용", "고농도 증기 시 레벨 A 고려", "풍상 접근"],
@@ -1041,6 +1256,46 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "무색 액체 또는 기체",
     odor: "강한 자극취",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "125",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 30, large_spill: 300 },
+        protective_action_km: {
+          small_day: 0.1, small_night: 0.5,
+          large_day: 1.5, large_night: 4.6,
+        },
+      },
+      water_reactive: true,
+      water_reaction_note: "물에 잘 녹으나 발열·증기↑ — 분무 주수는 신중히, 직접 물 분사 금지",
+      scene_approach: [
+        "풍상측·언덕 위에서 접근 — 증기는 공기보다 약간 가벼움",
+        "레벨 A 밀폐형 보호복 필수 — 피부 흡수 매우 위험",
+        "ERG 지침 125 참조 — 흡입독성 + 부식성",
+      ],
+      fire_tactics: [
+        "물 분무 커튼으로 증기 차단",
+        "이산화탄소·분말 소화약제 가능",
+        "탱크 직접 분사는 분무 형태로만",
+      ],
+      leak_control: [
+        "누출원 차단·둑쌓기로 확산 방지",
+        "물 분무로 증기 흡수, 액체 누출원 자극 금지",
+        "석회·중탄산칼슘으로 중화 가능 (HAZMAT 팀)",
+      ],
+      decon_recommendation: "급속 대량 제독 — 물 세척 즉시 + 글루콘산칼슘 젤 도포 (HF 특이)",
+      bleve_risk: false,
+      resource_request: [
+        "UN1052 + 누출량 + 풍향·풍속",
+        "화학구조대 / 글루콘산칼슘 젤 / 중화제(석회)",
+        "권역응급의료센터·화상센터 동시 통보",
+      ],
+      absolute_prohibitions: [
+        "레벨 A 미만 PPE로 접근 금지 — 피부 흡수로 치명",
+        "직접 강한 물 분사 금지 — 증기·비산 증가",
+        "오염자 피부에 표준 중화제(NaHCO3) 사용 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: ["레벨 A 완전 밀폐형 필수", "SCBA 착용", "네오프렌 장갑 이중 (HF는 라텍스 투과)", "극소량도 치명적 — 최대 경계"],
@@ -1103,6 +1358,46 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "무색 액체/기체",
     odor: "쓴 아몬드 냄새 (유전적으로 감지 불가한 사람 40%)",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "117",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 60, large_spill: 300 },
+        protective_action_km: {
+          small_day: 0.2, small_night: 0.7,
+          large_day: 1.2, large_night: 3.5,
+        },
+      },
+      water_reactive: false,
+      water_reaction_note: "물에 녹음 — 분무 주수로 흡수 가능, 단 폐수 처리 주의",
+      scene_approach: [
+        "풍상측 접근 — 청산 가스는 공기보다 약간 가벼움, 빠르게 확산",
+        "레벨 A 밀폐형 보호복 — 피부 흡수 치명",
+        "ERG 지침 117 참조 — 가연성 + 맹독성",
+      ],
+      fire_tactics: [
+        "분무 주수로 증기 흡수·확산 차단",
+        "이산화탄소·분말 소화약제 사용",
+        "직접 물 분사로 액체 누출원 자극 금지",
+      ],
+      leak_control: [
+        "누출원 즉시 차단 — 밸브 폐쇄",
+        "분무 주수로 가스 흡수",
+        "5% 차아염소산나트륨 용액으로 중화 가능 (HAZMAT)",
+      ],
+      decon_recommendation: "비상 제독 — 즉시 옷 제거 + 다량의 물 세척, Cyanokit 준비",
+      bleve_risk: false,
+      resource_request: [
+        "UN1051 + 누출량·풍향",
+        "화학구조대 / Cyanokit(하이드록소코발라민) / 중독센터(1339)",
+        "권역응급의료센터 동시 통보",
+      ],
+      absolute_prohibitions: [
+        "레벨 A 미만 PPE로 접근 금지 — 피부 흡수 치명",
+        "구강 대 구강 인공호흡 금지 — 구조자 2차 노출",
+        "점화원 휴대 금지 — 가연성",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: ["레벨 A 완전 밀폐형", "SCBA 필수", "즉시 치명적 — IDLH 50ppm", "인화성 — 점화원 제거"],
@@ -1164,6 +1459,45 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색 기체",
     odor: "무취 무미 — 감지 불가",
+    res_protocol: {
+      ppe_level: "C",
+      erg_guide_number: "119",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 30, large_spill: 200 },
+        protective_action_km: {
+          small_day: 0.1, small_night: 0.2,
+          large_day: 1.2, large_night: 3.9,
+        },
+      },
+      water_reactive: false,
+      scene_approach: [
+        "풍상측 접근 — 공기와 비슷한 비중, 확산 빠름",
+        "밀폐공간(차량·차고·지하실) 진입 시 농도계 + SCBA 필수",
+        "ERG 지침 119 참조 — 가연성 + 흡입독성",
+      ],
+      fire_tactics: [
+        "발생원(연소기·차량) 차단·차단·환기 우선",
+        "분무 주수로 가스 확산 차단",
+        "이산화탄소·분말 소화약제 사용",
+      ],
+      leak_control: [
+        "발생원(연소·차량 엔진) 즉시 차단",
+        "강제 환기 — 출입구 개방 + 송풍기",
+        "농도 < 25ppm 확인 후 활동",
+      ],
+      decon_recommendation: "기술적 제독 — 환기 좋은 곳으로 즉시 이송, 100% O2 투여",
+      bleve_risk: false,
+      resource_request: [
+        "UN1016 + 발생원(보일러·차량·화재)",
+        "화학구조대 / CO 농도계 / 강제 환기 장비",
+        "고압산소치료(HBO) 가능 의료기관 통보",
+      ],
+      absolute_prohibitions: [
+        "농도 측정 없이 폐쇄공간 진입 금지",
+        "SCBA 없이 발생원 접근 금지",
+        "환기 미실시 상태로 작업 지속 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["SCBA 착용 필수", "CO 감지기 휴대", "인화성 — 폭발 한계 12.5-74%", "밀폐 공간 2인 1조"],
@@ -1223,6 +1557,38 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색 투명 액체",
     odor: "에탄올과 유사한 알코올 냄새",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "131",
+      water_reactive: false,
+      water_reaction_note: "물에 잘 녹음 — 일반형 거품 효과 떨어짐, 알콜 저항성 거품 사용",
+      scene_approach: [
+        "풍상측 접근, 모든 점화원 제거 (인화점 11°C)",
+        "증기는 공기보다 약간 무거움, 저지대 침적",
+        "ERG 지침 131 참조 — 인화성 액체 + 독성",
+      ],
+      fire_tactics: [
+        "알콜 저항성(내알콜) 거품 필수 — 일반형 거품 효과 없음",
+        "분무 주수로 탱크 냉각",
+        "이산화탄소·분말 소화약제 가능",
+      ],
+      leak_control: [
+        "둑쌓기로 확산 방지 + 수계 유입 차단",
+        "모든 점화원·정전기 제거",
+        "흡수재(모래·규조토) 사용",
+      ],
+      decon_recommendation: "기술적 제독 — 비누·세제로 세척 후 물 헹굼",
+      bleve_risk: false,
+      resource_request: [
+        "UN1230 + 누출량(L)",
+        "화학구조대 / 알콜 저항성 거품차 / 흡수재",
+      ],
+      absolute_prohibitions: [
+        "일반형 거품 단독 사용 금지 — 무효",
+        "점화원·정전기 미차단 진입 금지",
+        "물 직접 강분사 금지 — 비산",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B + SCBA", "내화학성 장갑", "인화점 11°C — 점화원 제거", "피부 흡수 가능 — 피부 보호"],
@@ -1285,6 +1651,39 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색 투명 액체",
     odor: "달콤한 방향족 냄새",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "130",
+      water_reactive: false,
+      water_reaction_note: "물에 녹지 않음 — 수면에 떠 화재 확산",
+      scene_approach: [
+        "풍상측 접근, 증기는 공기보다 무거움 (저지대 침적)",
+        "모든 점화원·정전기 제거 (인화점 -11°C)",
+        "발암물질 — 노출 시간 최소화",
+      ],
+      fire_tactics: [
+        "일반형 거품(AFFF) 사용",
+        "분무 주수로 탱크 냉각 + 증기 확산 차단",
+        "이산화탄소·분말 소화약제 가능",
+      ],
+      leak_control: [
+        "둑쌓기로 확산 방지, 수계 유입 차단",
+        "비활성 흡수재(모래·규조토) 사용",
+        "모든 점화원·정전기 제거",
+      ],
+      decon_recommendation: "기술적 제독 — 비누·세제 세척 + 의복 즉시 제거(발암물질)",
+      bleve_risk: false,
+      resource_request: [
+        "UN1114 + 누출량(L)",
+        "화학구조대 / 거품차 / 흡수재",
+        "노출 인원 명단 — 장기 역학조사 대상",
+      ],
+      absolute_prohibitions: [
+        "물 강분사 금지 — 액체 비산·화재 확산",
+        "점화원 휴대 금지",
+        "오염 의복 휴대 금지 — 발암물질",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B + SCBA", "발암물질 — 노출 최소화", "인화점 -11°C — 극인화성", "정전기 방지"],
@@ -1341,6 +1740,45 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "무색 기체",
     odor: "갓 벤 풀·건초 냄새 (저농도에서 쾌적하게 느껴질 수 있음 — 위험!)",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "125",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 100, large_spill: 500 },
+        protective_action_km: {
+          small_day: 0.6, small_night: 2.4,
+          large_day: 2.9, large_night: 9.2,
+        },
+      },
+      water_reactive: true,
+      water_reaction_note: "물과 반응하여 HCl·CO2 생성 — 분무 주수 흡수 효과 제한적",
+      scene_approach: [
+        "풍상측·언덕 위 접근 — 공기보다 3.4배 무거워 저지대 침적",
+        "레벨 A 밀폐형 보호복 필수 — 후각 마비 빠름",
+        "ERG 지침 125 참조 — 흡입독성 가스, 광역 대피",
+      ],
+      fire_tactics: [
+        "물 분무 커튼으로 증기 확산 차단",
+        "이산화탄소·분말 소화약제",
+        "발생원(클로로폼·디클로로메탄 화재) 차단",
+      ],
+      leak_control: [
+        "누출원 즉시 차단",
+        "물 분무로 증기 흡수 (효과 제한)",
+        "광역 대피 우선",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물 세척, 흡입자 24시간 폐부종 관찰",
+      bleve_risk: false,
+      resource_request: [
+        "UN1076 + 풍향·풍속·시간대",
+        "화학구조대 / 광역 대피 자원 / 권역응급의료센터 ARDS 대비",
+      ],
+      absolute_prohibitions: [
+        "레벨 A 미만 PPE로 접근 금지",
+        "풍하측·저지대 진입 금지",
+        "지연성 폐부종 가능 — 무증상자도 24시간 관찰",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: ["레벨 A 완전 밀폐형", "SCBA", "IDLH 2ppm — 극독성", "공기보다 무거워 저지대 축적"],
@@ -1398,6 +1836,36 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "백색 고체 (펠릿, 플레이크) 또는 무색 수용액",
     odor: "무취",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "154",
+      water_reactive: true,
+      water_reaction_note: "물에 녹을 때 다량 발열 — 다량의 물로 한 번에 희석",
+      scene_approach: [
+        "풍상측 접근, 분진(고체)/액체 모두 부식성",
+        "ERG 지침 154 참조 — 부식성·물반응 발열",
+      ],
+      fire_tactics: [
+        "물 분무로 분진 억제",
+        "이산화탄소·분말 소화약제 가능",
+      ],
+      leak_control: [
+        "고체: 진공/삽으로 수거",
+        "액체: 둑쌓기 + 비활성 흡수재",
+        "찰흙·톱밥 금지(반응 위험)",
+      ],
+      decon_recommendation: "급속 대량 제독 — 30분 이상 다량의 물로 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1823 + 형태(고체/액체)·누출량",
+        "화학구조대 / 흡수재",
+      ],
+      absolute_prohibitions: [
+        "산성 중화제 직접 사용 금지 — 발열",
+        "SCBA 없이 분진 환경 진입 금지",
+        "수계·하수구 방치 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "C",
       self_protection: ["레벨 C 화학복 + 방독면 (에어로졸 시 레벨 B)", "내알칼리성 장갑", "안면보호대", "비휘발성이나 고체 분진/에어로졸 주의"],
@@ -1454,6 +1922,37 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 2,
     appearance: "무색 투명 액체",
     odor: "약간의 자극취 또는 무취",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "143",
+      water_reactive: false,
+      water_reaction_note: "물에 잘 녹음 — 분무 주수로 희석 가능",
+      scene_approach: [
+        "풍상측 접근, 가연물 분리",
+        "분해 시 산소 발생·발열·압력 상승",
+        "ERG 지침 143 참조 — 산화제",
+      ],
+      fire_tactics: [
+        "다량의 물로 냉각·희석",
+        "유기물·금속 분진과 접촉 시 폭발 위험 — 가연물 분리",
+      ],
+      leak_control: [
+        "둑쌓기 + 다량의 물 희석",
+        "가연성 흡수재(톱밥·종이) 금지 — 발화",
+        "용기 압력 상승 주의 — 통기 확보",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물로 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN2015 + 농도·누출량",
+        "화학구조대 / 비활성 흡수재",
+      ],
+      absolute_prohibitions: [
+        "유기물·금속과 혼합 금지 — 발화",
+        "밀폐 용기에 흡수재 담아 보관 금지 — 압력 상승",
+        "톱밥·종이 흡수재 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "C",
       self_protection: ["레벨 C (고농도 시 B)", "내화학성 장갑", "고농도(>30%) — 강력 산화제, 유기물 접촉 시 발화 가능"],
@@ -1507,6 +2006,37 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색 기체 (수용액은 무색 액체)",
     odor: "강한 자극취",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "132",
+      water_reactive: false,
+      water_reaction_note: "물에 잘 녹음 — 분무 주수로 증기 흡수 가능",
+      scene_approach: [
+        "풍상측 접근, 강한 자극취",
+        "발암물질 — 노출 시간 최소화",
+        "ERG 지침 132 참조 — 인화성 액체",
+      ],
+      fire_tactics: [
+        "일반형 또는 알콜 저항성 거품 사용",
+        "분무 주수로 탱크 냉각·증기 확산 차단",
+      ],
+      leak_control: [
+        "둑쌓기로 확산 방지",
+        "흡수재(모래·규조토) 사용",
+        "수계 유입 차단",
+      ],
+      decon_recommendation: "기술적 제독 — 비누·세제로 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1198 + 농도·누출량",
+        "화학구조대 / 거품차 / 흡수재",
+      ],
+      absolute_prohibitions: [
+        "SCBA 없이 진입 금지",
+        "점화원 휴대 금지",
+        "오염 의복 휴대 금지 — 발암물질",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B + SCBA", "발암물질 — 노출 최소화", "인화성 — 점화원 제거"],
@@ -1566,6 +2096,38 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 2,
     appearance: "무색 투명 액체",
     odor: "달콤한 과일향 특유 냄새",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "127",
+      water_reactive: false,
+      water_reaction_note: "물에 잘 녹음 — 일반형 거품 효과 떨어짐, 알콜 저항성 거품 사용",
+      scene_approach: [
+        "풍상측 접근, 인화점 -20°C — 점화원 즉시 제거",
+        "증기는 공기보다 무거움, 저지대 침적",
+        "ERG 지침 127 참조 — 인화성 액체",
+      ],
+      fire_tactics: [
+        "알콜 저항성 거품 필수",
+        "분무 주수로 탱크 냉각",
+        "이산화탄소·분말 소화약제 가능",
+      ],
+      leak_control: [
+        "둑쌓기 + 비활성 흡수재",
+        "모든 점화원·정전기 제거",
+        "수계 유입 차단",
+      ],
+      decon_recommendation: "기술적 제독 — 비누·세제 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1090 + 누출량(L)",
+        "화학구조대 / 알콜 저항성 거품차",
+      ],
+      absolute_prohibitions: [
+        "일반형 거품 단독 사용 금지",
+        "점화원·정전기 미차단 진입 금지",
+        "물 직접 강분사 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "C",
       self_protection: ["레벨 C + 유기증기 카트리지", "인화점 -20°C — 극인화성!", "정전기 방지", "저독성이나 고농도 마취 효과"],
@@ -1619,6 +2181,38 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 2,
     appearance: "무색 투명 액체",
     odor: "달콤한 방향족 냄새 (톨루엔 유사)",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "130",
+      water_reactive: false,
+      water_reaction_note: "물에 녹지 않음 — 수면에 떠 화재 확산",
+      scene_approach: [
+        "풍상측 접근, 인화점 27~32°C",
+        "증기는 공기보다 무거움",
+        "ERG 지침 130 참조 — 인화성 액체",
+      ],
+      fire_tactics: [
+        "일반형 거품(AFFF) 사용",
+        "분무 주수로 탱크 냉각",
+        "이산화탄소·분말 소화약제 가능",
+      ],
+      leak_control: [
+        "둑쌓기 + 비활성 흡수재",
+        "모든 점화원·정전기 제거",
+        "수계 유입 차단",
+      ],
+      decon_recommendation: "기술적 제독 — 비누·세제 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1307 + 누출량(L)",
+        "화학구조대 / 거품차 / 흡수재",
+      ],
+      absolute_prohibitions: [
+        "물 강분사 금지 — 액체 비산",
+        "점화원 미차단 진입 금지",
+        "오염 의복 휴대 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B + SCBA", "인화성 — 점화원 제거", "톨루엔과 유사한 독성 프로필"],
@@ -1672,6 +2266,38 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색~연한 황색 액체 (발연 질산은 적갈색)",
     odor: "자극취 (NOx 발생 시 갈색 연기)",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "157",
+      water_reactive: true,
+      water_reaction_note: "물 희석 시 다량 발열·갈색 NO2 증기 발생",
+      scene_approach: [
+        "풍상측·언덕 위 접근 — 갈색 증기는 강한 산화제",
+        "유기물·금속과 격리 — 발화·폭발 위험",
+        "ERG 지침 157 참조 — 부식성·산화성",
+      ],
+      fire_tactics: [
+        "물 분무로 증기 확산 차단",
+        "이산화탄소·분말 소화약제",
+        "가연물 분리 우선",
+      ],
+      leak_control: [
+        "둑쌓기 + 비활성 흡수재(모래·규조토)",
+        "찰흙·톱밥·종이 금지(반응 위험)",
+        "유기물 혼합 절대 금지",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN2031 + 농도·누출량",
+        "화학구조대 / 비활성 흡수재 / 중화제",
+      ],
+      absolute_prohibitions: [
+        "유기물(톱밥·종이·기름)과 접촉 금지 — 발화",
+        "오염자에 직접 중화제 도포 금지",
+        "SCBA 없이 진입 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B + SCBA", "NOx 가스 발생 — 갈색 연기 관찰 시 레벨 A", "산화성 — 유기물 접촉 시 발화"],
@@ -1730,6 +2356,38 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색~분홍색 결정 또는 액체",
     odor: "특유의 달콤한 타르 냄새",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "153",
+      water_reactive: false,
+      water_reaction_note: "물에 약간 녹음",
+      scene_approach: [
+        "풍상측 접근, 상온에서 고체 → 증기압 낮음",
+        "융점 41°C — 화재 시 액체로 변환",
+        "ERG 지침 153 참조 — 독성·부식성",
+      ],
+      fire_tactics: [
+        "알콜 저항성 거품 사용 (극성 용매)",
+        "분무 주수로 냉각",
+        "이산화탄소·분말 소화약제",
+      ],
+      leak_control: [
+        "고체: 진공/삽 수거",
+        "액체(가열 시): 둑쌓기 + 흡수재",
+        "수계 유입 차단",
+      ],
+      decon_recommendation: "기술적 제독 — 폴리에틸렌글리콜(PEG) + 물 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN2312 + 형태(고체/액체)·누출량",
+        "화학구조대 / PEG / 거품차",
+      ],
+      absolute_prohibitions: [
+        "물 단독 세척 금지 — 피부 흡수 가속",
+        "SCBA 없이 진입 금지",
+        "수계 방치 금지 — 어류 독성",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B", "피부 흡수 매우 빠름 — 피부 보호 필수", "부틸고무 장갑"],
@@ -1786,6 +2444,45 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "적갈색 액체, 적갈색 증기",
     odor: "강하고 자극적인 불쾌한 냄새",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "154",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 60, large_spill: 300 },
+        protective_action_km: {
+          small_day: 0.3, small_night: 0.6,
+          large_day: 1.4, large_night: 4.0,
+        },
+      },
+      water_reactive: true,
+      water_reaction_note: "물과 반응하여 HBr·HOBr 발생, 강한 산화제",
+      scene_approach: [
+        "풍상측·언덕 위 접근 — 적갈색 액체, 증기 매우 위험",
+        "레벨 A 밀폐형 보호복 — 피부 흡수 위험",
+        "ERG 지침 154 참조 — 흡입독성 + 부식성 + 산화성",
+      ],
+      fire_tactics: [
+        "물 분무 커튼으로 증기 차단",
+        "분말 소화약제 사용 — 직접 물 분사는 비산",
+        "가연물 분리",
+      ],
+      leak_control: [
+        "둑쌓기 + 흡수재(모래)",
+        "탄산나트륨 용액으로 중화 가능 (HAZMAT)",
+        "찰흙·톱밥 금지(반응 위험)",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물 세척, 의복 즉시 제거",
+      bleve_risk: false,
+      resource_request: [
+        "UN1744 + 누출량·풍향",
+        "화학구조대 / 중화제(Na2CO3) / 광역 대피 자원",
+      ],
+      absolute_prohibitions: [
+        "레벨 A 미만 PPE로 접근 금지",
+        "직접 강한 물 분사 금지",
+        "톱밥·종이 흡수재 금지 — 발화",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: ["레벨 A 완전 밀폐형", "SCBA", "브롬은 극부식성·독성", "피부 접촉 시 심한 화상", "공기보다 무거워 저지대 축적"],
@@ -1846,6 +2543,47 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "무색 기체 (액화 시 무색 액체)",
     odor: "달콤한 에테르 냄새",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "119P",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 30, large_spill: 100 },
+        protective_action_km: {
+          small_day: 0.1, small_night: 0.2,
+          large_day: 0.7, large_night: 1.5,
+        },
+      },
+      water_reactive: false,
+      water_reaction_note: "물에 잘 녹음 — 분무 주수로 증기 흡수 가능",
+      scene_approach: [
+        "풍상측 접근, 매우 가연성 가스 (인화점 -20°C)",
+        "발암물질·돌연변이성 — 노출 시간 최소화",
+        "ERG 지침 119P 참조 — 중합 반응 위험",
+      ],
+      fire_tactics: [
+        "분무 주수로 탱크 냉각 + 증기 확산 차단",
+        "이산화탄소·분말 소화약제",
+        "철수 신호: 안전밸브 소리 변화, 중합 반응(BLEVE 위험)",
+      ],
+      leak_control: [
+        "누출원 차단 우선",
+        "모든 점화원·정전기 제거",
+        "분무 주수로 가스 흡수",
+      ],
+      decon_recommendation: "급속 대량 제독 — 환기 좋은 곳으로 이송",
+      bleve_risk: true,
+      bleve_evacuation_m: 1600,
+      resource_request: [
+        "UN1040 + 누출량·풍향",
+        "화학구조대 / 거품차 / 광역 대피 자원",
+        "용기 가열·중합 시 BLEVE 1.6km 대피",
+      ],
+      absolute_prohibitions: [
+        "점화원 휴대 금지",
+        "가열된 용기 접근 금지 — 중합·BLEVE 위험",
+        "오염 의복 휴대 금지 — 발암물질",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: ["레벨 A", "SCBA", "극인화성 — 폭발 범위 3-100%!", "발암물질", "IDLH 800ppm"],
@@ -1900,6 +2638,45 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "무색 기체",
     odor: "마늘·생선 썩는 냄새 (불순물 때문)",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "119",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 60, large_spill: 400 },
+        protective_action_km: {
+          small_day: 0.2, small_night: 0.6,
+          large_day: 2.0, large_night: 5.3,
+        },
+      },
+      water_reactive: false,
+      scene_approach: [
+        "풍상측 접근, 마늘·생선 비린내 — 후각 빠르게 마비",
+        "공기 중 자연 발화 가능 — 농도 차에 따라",
+        "ERG 지침 119 참조 — 가연성 + 맹독성",
+      ],
+      fire_tactics: [
+        "분무 주수로 가스 확산 차단",
+        "이산화탄소·분말 소화약제",
+        "용기 냉각 우선",
+      ],
+      leak_control: [
+        "누출원 즉시 차단",
+        "모든 점화원 제거",
+        "분무 주수로 가스 흡수",
+      ],
+      decon_recommendation: "비상 제독 — 즉시 환기 + 산소 투여",
+      bleve_risk: true,
+      bleve_evacuation_m: 1600,
+      resource_request: [
+        "UN2199 + 누출량·풍향",
+        "화학구조대 / 가스 농도계 / 중독센터(1339)",
+      ],
+      absolute_prohibitions: [
+        "레벨 A 미만 PPE로 접근 금지",
+        "점화원 휴대 금지 — 자연 발화",
+        "오염자 구강 대 구강 호흡 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: ["레벨 A", "SCBA", "IDLH 50ppm", "인화성 — 자연 발화 가능", "훈증제(알루미늄 인화물)에서 발생"],
@@ -1957,6 +2734,37 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색 투명 액체",
     odor: "달콤한 에테르 냄새 (클로로포름 유사)",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "151",
+      water_reactive: false,
+      water_reaction_note: "물에 녹지 않음 — 액체 침강(공기보다 5배 무거움)",
+      scene_approach: [
+        "풍상측·언덕 위 접근 — 증기는 공기보다 매우 무거움",
+        "고온에서 분해 시 포스겐 발생 — 화재 노출 주의",
+        "ERG 지침 151 참조 — 독성 액체",
+      ],
+      fire_tactics: [
+        "분무 주수로 증기 확산 차단·용기 냉각",
+        "직접 강한 물 분사 금지 — 액체 비산",
+        "화재 시 포스겐 발생 — 광역 대피 검토",
+      ],
+      leak_control: [
+        "둑쌓기 + 비활성 흡수재",
+        "수계 유입 차단(발암물질·잔류)",
+      ],
+      decon_recommendation: "기술적 제독 — 비누·세제 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1846 + 누출량·화재 여부",
+        "화학구조대 / 포스겐 측정 장비",
+      ],
+      absolute_prohibitions: [
+        "화재 노출 시 SCBA 필수 — 포스겐 분해",
+        "수계 유입 방치 금지",
+        "오염 의복 휴대 금지 — 발암물질",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B + SCBA", "간·신독성 강함", "열분해 시 포스겐 발생 가능!"],
@@ -2013,6 +2821,46 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 4,
     appearance: "무색 액체",
     odor: "마늘/양파 유사 냄새",
+    res_protocol: {
+      ppe_level: "A",
+      erg_guide_number: "131P",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 30, large_spill: 100 },
+        protective_action_km: {
+          small_day: 0.2, small_night: 0.6,
+          large_day: 1.2, large_night: 2.3,
+        },
+      },
+      water_reactive: false,
+      water_reaction_note: "물에 녹음 — 분무 주수로 증기 흡수 가능",
+      scene_approach: [
+        "풍상측 접근, 인화점 0°C — 매우 가연성",
+        "발암물질 — 노출 시간 최소화",
+        "ERG 지침 131P 참조 — 인화성 + 흡입독성 + 중합 위험",
+      ],
+      fire_tactics: [
+        "알콜 저항성 거품 또는 일반형 거품",
+        "분무 주수로 탱크 냉각",
+        "중합 반응 주의 — 안전밸브 소리 변화 시 철수",
+      ],
+      leak_control: [
+        "둑쌓기 + 비활성 흡수재",
+        "모든 점화원·정전기 제거",
+        "수계 유입 차단",
+      ],
+      decon_recommendation: "급속 대량 제독 — 다량의 물 세척, Cyanokit 준비 (대사 후 시안 발생)",
+      bleve_risk: true,
+      bleve_evacuation_m: 1600,
+      resource_request: [
+        "UN1093 + 누출량·풍향",
+        "화학구조대 / 거품차 / Cyanokit",
+      ],
+      absolute_prohibitions: [
+        "레벨 A 미만 PPE로 접근 금지",
+        "점화원 휴대 금지",
+        "오염 의복 휴대 금지 — 발암물질",
+      ],
+    },
     ems_protocol: {
       ppe_level: "A",
       self_protection: ["레벨 A", "SCBA", "인화성 + 시안화물 독성", "피부 흡수 빠름"],
@@ -2073,6 +2921,45 @@ export const CHEMICALS: Chemical[] = [
     danger_level: 3,
     appearance: "무색 액체",
     odor: "순수: 달콤한 에테르 냄새 / 불순: 불쾌한 황 냄새",
+    res_protocol: {
+      ppe_level: "B",
+      erg_guide_number: "131",
+      erg_distance: {
+        initial_isolation_m: { small_spill: 30, large_spill: 60 },
+        protective_action_km: {
+          small_day: 0.1, small_night: 0.1,
+          large_day: 0.2, large_night: 0.4,
+        },
+      },
+      water_reactive: false,
+      water_reaction_note: "물에 녹지 않음 — 액체 침강",
+      scene_approach: [
+        "풍상측 접근, 인화점 -30°C — 극도로 가연성",
+        "자연 발화점 90°C — 뜨거운 표면 접촉 시 발화",
+        "ERG 지침 131 참조 — 인화성 + 독성",
+      ],
+      fire_tactics: [
+        "일반형 거품 또는 알콜 저항성 거품",
+        "분무 주수로 탱크 냉각",
+        "이산화탄소·분말 소화약제",
+      ],
+      leak_control: [
+        "둑쌓기 + 흡수재(모래·규조토)",
+        "모든 점화원·뜨거운 표면 제거",
+        "수계 유입 차단",
+      ],
+      decon_recommendation: "기술적 제독 — 비누·세제 세척",
+      bleve_risk: false,
+      resource_request: [
+        "UN1131 + 누출량·풍향",
+        "화학구조대 / 거품차",
+      ],
+      absolute_prohibitions: [
+        "뜨거운 표면 접촉 금지 — 자연 발화",
+        "점화원 휴대 금지",
+        "수계 방치 금지",
+      ],
+    },
     ems_protocol: {
       ppe_level: "B",
       self_protection: ["레벨 B + SCBA", "극인화성 — 자연발화온도 90°C (매우 낮음!)", "정전기·뜨거운 표면만으로 발화", "증기는 공기보다 무거움"],

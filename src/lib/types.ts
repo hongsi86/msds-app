@@ -1,4 +1,4 @@
-export type RoleType = "EMS" | "MED" | "DM" | "CSA";
+export type RoleType = "RES" | "EMS" | "MED" | "DM" | "CSA";
 
 export type DangerLevel = 1 | 2 | 3 | 4;
 
@@ -13,6 +13,35 @@ export interface Medication {
   name: string;
   dose?: string;
   note?: string;
+}
+
+export interface ERGDistance {
+  initial_isolation_m: {
+    small_spill: number;
+    large_spill: number;
+  };
+  protective_action_km: {
+    small_day: number;
+    small_night: number;
+    large_day: number;
+    large_night: number;
+  };
+}
+
+export interface RESProtocol {
+  ppe_level: "A" | "B" | "C" | "D";
+  erg_guide_number?: string;
+  erg_distance?: ERGDistance;
+  water_reactive: boolean;
+  water_reaction_note?: string;
+  scene_approach: string[];
+  fire_tactics: string[];
+  leak_control: string[];
+  decon_recommendation: string;
+  bleve_risk: boolean;
+  bleve_evacuation_m?: number;
+  resource_request: string[];
+  absolute_prohibitions: string[];
 }
 
 export interface EMSProtocol {
@@ -63,6 +92,7 @@ export interface Chemical {
   danger_level: DangerLevel;
   appearance: string;
   odor?: string;
+  res_protocol: RESProtocol;
   ems_protocol: EMSProtocol;
   med_protocol: MEDProtocol;
   dm_protocol: DMProtocol;

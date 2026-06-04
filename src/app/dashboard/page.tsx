@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
-type RoleType = 'EMS' | 'MED' | 'DM' | 'CSA';
+type RoleType = 'RES' | 'EMS' | 'MED' | 'DM' | 'CSA';
 
 interface TimelineEvent {
   id: string;
@@ -37,6 +37,7 @@ interface Incident {
 }
 
 const ROLE_COLORS: Record<RoleType, string> = {
+  RES: 'bg-red-50 text-red-700 ring-1 ring-red-200',
   EMS: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200',
   MED: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
   DM: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
@@ -44,6 +45,7 @@ const ROLE_COLORS: Record<RoleType, string> = {
 };
 
 const ROLE_BG: Record<RoleType, string> = {
+  RES: 'border-red-300',
   EMS: 'border-rose-300',
   MED: 'border-blue-300',
   DM: 'border-amber-300',
@@ -67,6 +69,7 @@ const SEVERITY_LABELS = { 1: '경미', 2: '중대', 3: '심각' };
 const STATUS_LABELS = { active: '대응 중', contained: '통제됨', resolved: '종료' };
 
 const DEFAULT_CHECKLISTS: Record<RoleType, string[]> = {
+  RES: ['풍상측·언덕 위 접근 확인', 'PPE 등급 결정 (A/B/C/D)', 'SCBA 착용', '초기격리거리 설정', 'HOT/WARM/COLD 3구역 통제선', '제독소 풍상측 설치', '물반응성 여부 확인', '추가 자원 수보 (UN·지침·풍향)'],
   EMS: ['PPE 착용 확인', '현장 접근 경로 확보', '환자 트리아지 완료', '제염 구역 설치', '이송 병원 확인 및 연락'],
   MED: ['수용 준비 완료', '해독제 재고 확인', '전문의 호출', '격리구역 설정', '검체 채취 준비'],
   DM: ['통제구역 설정', '주민 대피 지시', '유관기관 통보', '언론 대응 준비', '자원 현황 파악'],
@@ -76,7 +79,7 @@ const DEFAULT_CHECKLISTS: Record<RoleType, string[]> = {
 function createDefaultIncident(chemical: string): Incident {
   const now = new Date().toISOString();
   const checklist: ChecklistItem[] = [];
-  for (const role of ['EMS', 'MED', 'DM', 'CSA'] as RoleType[]) {
+  for (const role of ['RES', 'EMS', 'MED', 'DM', 'CSA'] as RoleType[]) {
     DEFAULT_CHECKLISTS[role].forEach((task, i) => {
       checklist.push({ id: `${role}-${i}`, role, task, completed: false });
     });
@@ -257,7 +260,7 @@ function DashboardContent() {
           {/* Add event */}
           <div className="shrink-0 border-t border-slate-200 px-4 py-3 space-y-2 bg-white">
             <div className="flex gap-1.5">
-              {(['EMS', 'MED', 'DM', 'CSA'] as RoleType[]).map((r) => (
+              {(['RES', 'EMS', 'MED', 'DM', 'CSA'] as RoleType[]).map((r) => (
                 <button
                   key={r}
                   onClick={() => setNewRole(r)}
@@ -370,7 +373,7 @@ function DashboardContent() {
           </div>
           {/* Role tabs */}
           <div className="shrink-0 px-4 flex gap-1.5 pb-2">
-            {(['EMS', 'MED', 'DM', 'CSA'] as RoleType[]).map((r) => (
+            {(['RES', 'EMS', 'MED', 'DM', 'CSA'] as RoleType[]).map((r) => (
               <button
                 key={r}
                 onClick={() => setActiveRole(r)}
