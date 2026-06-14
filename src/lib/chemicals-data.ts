@@ -19,7 +19,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "137",
-      erg_action_summary: "ERG 137 권고: 초기 격리 최소 50m. 누출 확대·화재 시 풍하 800m 대피",
+      erg_action_summary: "ERG 137 권고: 초기 격리 50m. 누출 확산 시 풍하 예방거리 확대. 화재 시 전 방향 800m 격리",
       water_reactive: true,
       water_reaction_note: "물 희석 시 다량 발열 — 다량의 물로 한꺼번에 희석할 것. 소량 물 직접 분사는 비산·증기 발생",
       scene_approach: [
@@ -254,7 +254,7 @@ export const CHEMICALS: Chemical[] = [
         initial_isolation_m: { small_spill: 30, large_spill: 150 },
         protective_action_km: {
           small_day: 0.1, small_night: 0.2,
-          large_day: 0.8, large_night: 2.3,
+          large_day: 0.9, large_night: 2.0,
         },
       },
       water_reactive: false,
@@ -487,7 +487,7 @@ export const CHEMICALS: Chemical[] = [
         initial_isolation_m: { small_spill: 60, large_spill: 600 },
         protective_action_km: {
           small_day: 0.3, small_night: 1.4,
-          large_day: 3.5, large_night: 8.3,
+          large_day: 5.8, large_night: 6.7,
         },
       },
       water_reactive: true,
@@ -951,7 +951,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "130",
-      erg_action_summary: "ERG 130 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
+      erg_action_summary: "ERG 130 권고: 초기 격리 50m. 대량 누출 시 풍하 300m+ 대피. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 액체 표면에 떠 화재 확산 가능",
       scene_approach: [
@@ -1172,7 +1172,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "157",
-      erg_action_summary: "ERG 157 권고: 초기 격리 최소 50m. 누출 확대 시 풍하 100m 대피",
+      erg_action_summary: "ERG 157 권고: 초기 격리 50m. 누출 확산 시 풍하 예방거리 확대. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물 희석 시 발열·HCl 증기 발생 — 다량의 물 한 번에",
       scene_approach: [
@@ -1263,10 +1263,10 @@ export const CHEMICALS: Chemical[] = [
       ppe_level: "A",
       erg_guide_number: "125",
       erg_distance: {
-        initial_isolation_m: { small_spill: 30, large_spill: 300 },
+        initial_isolation_m: { small_spill: 30, large_spill: 200 },
         protective_action_km: {
           small_day: 0.1, small_night: 0.5,
-          large_day: 1.5, large_night: 4.6,
+          large_day: 2.0, large_night: 3.7,
         },
       },
       water_reactive: true,
@@ -1363,12 +1363,12 @@ export const CHEMICALS: Chemical[] = [
     odor: "쓴 아몬드 냄새 (유전적으로 감지 불가한 사람 40%)",
     res_protocol: {
       ppe_level: "A",
-      erg_guide_number: "117",
+      erg_guide_number: "117P",
       erg_distance: {
-        initial_isolation_m: { small_spill: 60, large_spill: 300 },
+        initial_isolation_m: { small_spill: 60, large_spill: 200 },
         protective_action_km: {
           small_day: 0.2, small_night: 0.7,
-          large_day: 1.2, large_night: 3.5,
+          large_day: 0.7, large_night: 1.8,
         },
       },
       water_reactive: false,
@@ -1563,7 +1563,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "131",
-      erg_action_summary: "ERG 131 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
+      erg_action_summary: "ERG 131 권고: 초기 격리 50m. 대량 누출 시 풍하 300m+ 대피. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 잘 녹음 — 일반형 거품 효과 떨어짐, 알콜 저항성 거품 사용",
       scene_approach: [
@@ -1658,7 +1658,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "130",
-      erg_action_summary: "ERG 130 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
+      erg_action_summary: "ERG 130 권고: 초기 격리 50m. 대량 누출 시 풍하 300m+ 대피. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 수면에 떠 화재 확산",
       scene_approach: [
@@ -1844,7 +1844,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "154",
-      erg_action_summary: "ERG 154 권고: 초기 격리 최소 50m. 분진·미스트 발생 시 풍하 100m",
+      erg_action_summary: "ERG 154 권고: 초기 격리 25m(고체)·50m(액체). 누출 확산 시 풍하 예방거리 확대. 화재 시 전 방향 800m 격리",
       water_reactive: true,
       water_reaction_note: "물에 녹을 때 다량 발열 — 다량의 물로 한 번에 희석",
       scene_approach: [
@@ -1931,7 +1931,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "143",
-      erg_action_summary: "ERG 143 권고: 초기 격리 최소 50m. 분해·화재 시 풍하 800m 대피",
+      erg_action_summary: "ERG 143 권고: 초기 격리 50m. 대량 누출 시 풍하 300m+ 대피. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 잘 녹음 — 분무 주수로 희석 가능",
       scene_approach: [
@@ -2016,7 +2016,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "132",
-      erg_action_summary: "ERG 132 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
+      erg_action_summary: "ERG 132 권고: 초기 격리 50m. 대량 누출 시 풍하 300m+ 대피. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 잘 녹음 — 분무 주수로 증기 흡수 가능",
       scene_approach: [
@@ -2107,7 +2107,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "127",
-      erg_action_summary: "ERG 127 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
+      erg_action_summary: "ERG 127 권고: 초기 격리 50m. 대량 누출 시 풍하 300m+ 대피. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 잘 녹음 — 일반형 거품 효과 떨어짐, 알콜 저항성 거품 사용",
       scene_approach: [
@@ -2193,7 +2193,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "130",
-      erg_action_summary: "ERG 130 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
+      erg_action_summary: "ERG 130 권고: 초기 격리 50m. 대량 누출 시 풍하 300m+ 대피. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 수면에 떠 화재 확산",
       scene_approach: [
@@ -2279,7 +2279,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "157",
-      erg_action_summary: "ERG 157 권고: 초기 격리 최소 50m. 누출 확대 시 풍하 100m 대피",
+      erg_action_summary: "ERG 157 권고: 초기 격리 50m. 누출 확산 시 풍하 예방거리 확대. 화재 시 전 방향 800m 격리",
       water_reactive: true,
       water_reaction_note: "물 희석 시 다량 발열·갈색 NO2 증기 발생",
       scene_approach: [
@@ -2370,7 +2370,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "153",
-      erg_action_summary: "ERG 153 권고: 초기 격리 최소 50m. 누출 확대 시 풍하 100m 대피",
+      erg_action_summary: "ERG 153 권고: 초기 격리 50m. 누출 확산 시 풍하 예방거리 확대. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 약간 녹음",
       scene_approach: [
@@ -2462,8 +2462,8 @@ export const CHEMICALS: Chemical[] = [
       erg_distance: {
         initial_isolation_m: { small_spill: 60, large_spill: 300 },
         protective_action_km: {
-          small_day: 0.3, small_night: 0.6,
-          large_day: 1.4, large_night: 4.0,
+          small_day: 0.8, small_night: 2.3,
+          large_day: 3.8, large_night: 7.5,
         },
       },
       water_reactive: true,
@@ -2562,7 +2562,7 @@ export const CHEMICALS: Chemical[] = [
         initial_isolation_m: { small_spill: 30, large_spill: 100 },
         protective_action_km: {
           small_day: 0.1, small_night: 0.2,
-          large_day: 0.7, large_night: 1.5,
+          large_day: 0.9, large_night: 2.0,
         },
       },
       water_reactive: false,
@@ -2654,10 +2654,10 @@ export const CHEMICALS: Chemical[] = [
       ppe_level: "A",
       erg_guide_number: "119",
       erg_distance: {
-        initial_isolation_m: { small_spill: 60, large_spill: 400 },
+        initial_isolation_m: { small_spill: 60, large_spill: 300 },
         protective_action_km: {
-          small_day: 0.2, small_night: 0.6,
-          large_day: 2.0, large_night: 5.3,
+          small_day: 0.3, small_night: 1.1,
+          large_day: 1.3, large_night: 3.7,
         },
       },
       water_reactive: false,
@@ -2749,7 +2749,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "151",
-      erg_action_summary: "ERG 151 권고: 초기 격리 최소 50m. 누출 확대 시 풍하 100m 대피",
+      erg_action_summary: "ERG 151 권고: 초기 격리 50m. 누출 확산 시 풍하 예방거리 확대. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 액체 침강(공기보다 5배 무거움)",
       scene_approach: [
@@ -2937,13 +2937,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "131",
-      erg_distance: {
-        initial_isolation_m: { small_spill: 30, large_spill: 60 },
-        protective_action_km: {
-          small_day: 0.1, small_night: 0.1,
-          large_day: 0.2, large_night: 0.4,
-        },
-      },
+      erg_action_summary: "ERG 131 권고: 초기 격리 50m. 대량 누출 시 풍하 300m+ 대피. 화재 시 전 방향 800m 격리",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 액체 침강",
       scene_approach: [
