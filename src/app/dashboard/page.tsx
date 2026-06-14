@@ -217,6 +217,12 @@ function DashboardContent() {
             </div>
             <p className="text-[10px] text-slate-400">{incident.chemical_name} · 경과 {elapsed}</p>
           </div>
+          <button
+            onClick={() => router.push('/dashboard/report-preview')}
+            className="shrink-0 rounded-lg bg-slate-900 text-white px-3 py-1.5 text-[11px] hover:bg-slate-700 transition-colors"
+          >
+            📄 보고서
+          </button>
           <button onClick={newIncident} className="shrink-0 rounded-lg bg-slate-100 border border-slate-200 px-3 py-1.5 text-[11px] text-slate-500 hover:text-slate-700 transition-colors">
             + 새 사고
           </button>

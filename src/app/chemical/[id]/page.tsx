@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import type { Chemical, RoleType } from '@/lib/types';
 import { getChemicalById } from '@/lib/chemicals-data';
+import { SiteConditionsBar } from '@/components/site-conditions-bar';
+import { RadioCard } from '@/components/radio-card';
+import { HospitalNotifyCard } from '@/components/hospital-notify-card';
+import type { GeoPoint, WeatherSnapshot } from '@/lib/weather';
 
 const ROLES: { key: RoleType; label: string; color: string; activeColor: string }[] = [
   { key: 'RES', label: '🚒 RES 구조대원', color: 'text-red-700 border-red-300', activeColor: 'bg-red-50 border-red-300 text-red-700' },
@@ -350,12 +354,26 @@ export default function ChemicalDetailPage() {
   const [activeRole, setActiveRole] = useState<RoleType>('RES');
   const [notFound, setNotFound] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [position, setPosition] = useState<GeoPoint | undefined>(undefined);
+  const [weather, setWeather] = useState<WeatherSnapshot | undefined>(undefined);
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2000);
+  }, []);
+
+  const handleSiteChange = useCallback(
+    (snap: { position?: GeoPoint; weather?: WeatherSnapshot }) => {
+      setPosition(snap.position);
+      setWeather(snap.weather);
+    },
+    []
+  );
 
   const copyCas = () => {
     if (!chemical) return;
     navigator.clipboard.writeText(chemical.cas_number).then(() => {
-      setToast('CAS 번호 복사됨');
-      setTimeout(() => setToast(null), 2000);
+      showToast('CAS 번호 복사됨');
     });
   };
 
@@ -437,6 +455,9 @@ export default function ChemicalDetailPage() {
           )}
         </div>
 
+        {/* 현장 조건: GPS + 풍향 */}
+        <SiteConditionsBar onChange={handleSiteChange} />
+
         {/* 물리화학적 특성 */}
         {chemical.physical_properties && <PhysicalPropertiesCard props={chemical.physical_properties} />}
 
@@ -462,8 +483,18 @@ export default function ChemicalDetailPage() {
           <h2 className={`text-sm font-semibold mb-4 ${activeRoleMeta.color.split(' ')[0]}`}>
             {activeRoleMeta.label} 대응 프로토콜
           </h2>
-          {activeRole === 'RES' && <RESPanel protocol={chemical.res_protocol} />}
-          {activeRole === 'EMS' && <EMSPanel protocol={chemical.ems_protocol} />}
+          {activeRole === 'RES' && (
+            <>
+              <RESPanel protocol={chemical.res_protocol} />
+              <RadioCard chemical={chemical} position={position} weather={weather} onToast={showToast} />
+            </>
+          )}
+          {activeRole === 'EMS' && (
+            <>
+              <EMSPanel protocol={chemical.ems_protocol} />
+              <HospitalNotifyCard chemical={chemical} position={position} onToast={showToast} />
+            </>
+          )}
           {activeRole === 'MED' && <MEDPanel chemical={chemical} />}
           {activeRole === 'DM' && <DMPanel protocol={chemical.dm_protocol} />}
           {activeRole === 'CSA' && <CSAPanel protocol={chemical.csa_protocol} />}
