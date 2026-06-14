@@ -81,6 +81,32 @@ export interface CSAProtocol {
   dispersion_model?: string;
 }
 
+export interface PhysicalProperties {
+  boiling_point_c?: number;
+  melting_point_c?: number;
+  flash_point_c?: number;
+  vapor_pressure_mmhg?: number;
+  vapor_density?: number;
+  specific_gravity?: number;
+  ph?: number;
+  solubility_water?: string;
+}
+
+export interface ExposureLimit {
+  value: number;
+  unit: "ppm" | "mg/m3";
+}
+
+export interface ToxicityData {
+  ld50_oral_rat_mg_kg?: number;
+  lc50_inhalation_rat?: { value: number; unit: "ppm" | "mg/m3"; hours: number };
+  iarc_carcinogen?: "1" | "2A" | "2B" | "3" | "4";
+  acgih_carcinogen?: "A1" | "A2" | "A3" | "A4" | "A5";
+  twa?: ExposureLimit;
+  stel?: ExposureLimit;
+  idlh?: ExposureLimit;
+}
+
 export interface Chemical {
   id: string;
   cas_number: string;
@@ -98,6 +124,8 @@ export interface Chemical {
   med_protocol: MEDProtocol;
   dm_protocol: DMProtocol;
   csa_protocol: CSAProtocol;
+  physical_properties?: PhysicalProperties;
+  toxicity_data?: ToxicityData;
 }
 
 export interface AIEstimation {

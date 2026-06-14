@@ -195,9 +195,11 @@ function EMSPanel({ protocol }: { protocol: Chemical['ems_protocol'] }) {
   );
 }
 
-function MEDPanel({ protocol }: { protocol: Chemical['med_protocol'] }) {
+function MEDPanel({ chemical }: { chemical: Chemical }) {
+  const protocol = chemical.med_protocol;
   return (
     <div className="space-y-4">
+      {chemical.toxicity_data && <ToxicitySection tox={chemical.toxicity_data} />}
       <Section title="임상 증상" items={protocol.clinical_symptoms} />
       <Section title="필수 검사" items={protocol.lab_tests} />
       {protocol.antidotes.length > 0 && (
@@ -233,6 +235,93 @@ function DMPanel({ protocol }: { protocol: Chemical['dm_protocol'] }) {
   );
 }
 
+function PhysicalPropertiesCard({ props: p }: { props: NonNullable<Chemical['physical_properties']> }) {
+  const items: { label: string; value: string; highlight?: boolean }[] = [];
+  if (p.boiling_point_c !== undefined) items.push({ label: '끓는점', value: `${p.boiling_point_c}°C` });
+  if (p.melting_point_c !== undefined) items.push({ label: '녹는점', value: `${p.melting_point_c}°C` });
+  if (p.flash_point_c !== undefined) items.push({ label: '인화점', value: `${p.flash_point_c}°C`, highlight: p.flash_point_c < 60 });
+  if (p.vapor_pressure_mmhg !== undefined) items.push({ label: '증기압 (20°C)', value: `${p.vapor_pressure_mmhg} mmHg` });
+  if (p.vapor_density !== undefined) items.push({ label: '증기밀도 (공기=1)', value: `${p.vapor_density}${p.vapor_density > 1 ? ' · 침강' : ' · 상승'}` });
+  if (p.specific_gravity !== undefined) items.push({ label: '비중 (물=1)', value: `${p.specific_gravity}` });
+  if (p.ph !== undefined) items.push({ label: 'pH', value: `${p.ph}` });
+  if (p.solubility_water) items.push({ label: '물 용해도', value: p.solubility_water });
+  if (items.length === 0) return null;
+  return (
+    <div className="rounded-lg bg-white border border-slate-200 p-3 mb-4 shadow-sm">
+      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">물리화학적 특성</p>
+      <div className="grid grid-cols-2 gap-2">
+        {items.map((item, i) => (
+          <div key={i} className={item.highlight ? 'rounded bg-rose-50 border border-rose-200 px-2 py-1.5' : 'px-2 py-1.5'}>
+            <p className="text-[10px] text-slate-400 leading-tight">{item.label}</p>
+            <p className={`text-sm font-medium ${item.highlight ? 'text-rose-700' : 'text-slate-700'}`}>{item.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ToxicitySection({ tox }: { tox: NonNullable<Chemical['toxicity_data']> }) {
+  const fmt = (e?: { value: number; unit: string }) => (e ? `${e.value} ${e.unit}` : '—');
+  const has = tox.ld50_oral_rat_mg_kg !== undefined || !!tox.lc50_inhalation_rat || !!tox.iarc_carcinogen || !!tox.acgih_carcinogen || !!tox.twa || !!tox.stel || !!tox.idlh;
+  if (!has) return null;
+  return (
+    <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
+      <p className="text-[11px] font-semibold text-blue-700 uppercase tracking-wider mb-2">정량 독성·노출 기준</p>
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+        {tox.ld50_oral_rat_mg_kg !== undefined && (
+          <div><p className="text-slate-500">LD50 (경구·쥐)</p><p className="font-medium text-slate-800">{tox.ld50_oral_rat_mg_kg} mg/kg</p></div>
+        )}
+        {tox.lc50_inhalation_rat && (
+          <div><p className="text-slate-500">LC50 (흡입·쥐, {tox.lc50_inhalation_rat.hours}h)</p><p className="font-medium text-slate-800">{tox.lc50_inhalation_rat.value} {tox.lc50_inhalation_rat.unit}</p></div>
+        )}
+        {tox.iarc_carcinogen && (
+          <div><p className="text-slate-500">IARC 발암성</p><p className="font-medium text-rose-700">{tox.iarc_carcinogen}군</p></div>
+        )}
+        {tox.acgih_carcinogen && (
+          <div><p className="text-slate-500">ACGIH 발암성</p><p className="font-medium text-slate-800">{tox.acgih_carcinogen}</p></div>
+        )}
+        {tox.twa && (
+          <div><p className="text-slate-500">TWA (8h)</p><p className="font-medium text-slate-800">{fmt(tox.twa)}</p></div>
+        )}
+        {tox.stel && (
+          <div><p className="text-slate-500">STEL (15분)</p><p className="font-medium text-slate-800">{fmt(tox.stel)}</p></div>
+        )}
+        {tox.idlh && (
+          <div><p className="text-slate-500">IDLH</p><p className="font-medium text-rose-700">{fmt(tox.idlh)}</p></div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ExternalMSDSCard({ chemical, onCopy }: { chemical: Chemical; onCopy: () => void }) {
+  const cas = chemical.cas_number;
+  const open = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
+  return (
+    <div className="mt-6 rounded-xl bg-slate-50 border border-slate-200 p-4">
+      <p className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-2">정식 MSDS 외부 참조</p>
+      <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+        ChemGuard는 현장 대응 도구입니다. 법적 요구(취급·저장·폐기·성분%·환경 등 전체 16항목)는 아래 공식 출처를 확인하세요.
+      </p>
+      <div className="grid grid-cols-3 gap-2 mb-2">
+        <button onClick={() => open('https://msds.kosha.or.kr/')} className="rounded-lg bg-white border border-slate-200 px-2 py-2 text-xs font-medium text-slate-700 hover:border-slate-400 transition-colors">
+          KOSHA MSDS
+        </button>
+        <button onClick={() => open('https://ncis.nier.go.kr/')} className="rounded-lg bg-white border border-slate-200 px-2 py-2 text-xs font-medium text-slate-700 hover:border-slate-400 transition-colors">
+          NCIS 화학물질
+        </button>
+        <button onClick={() => open(`https://pubchem.ncbi.nlm.nih.gov/#query=${cas}`)} className="rounded-lg bg-white border border-slate-200 px-2 py-2 text-xs font-medium text-slate-700 hover:border-slate-400 transition-colors">
+          PubChem
+        </button>
+      </div>
+      <button onClick={onCopy} className="w-full rounded-lg bg-slate-700 text-white px-3 py-2 text-xs font-medium hover:bg-slate-800 transition-colors">
+        CAS 복사 · {cas}
+      </button>
+    </div>
+  );
+}
+
 function CSAPanel({ protocol }: { protocol: Chemical['csa_protocol'] }) {
   return (
     <div className="space-y-4">
@@ -260,6 +349,15 @@ export default function ChemicalDetailPage() {
   const [chemical, setChemical] = useState<Chemical | null>(null);
   const [activeRole, setActiveRole] = useState<RoleType>('RES');
   const [notFound, setNotFound] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const copyCas = () => {
+    if (!chemical) return;
+    navigator.clipboard.writeText(chemical.cas_number).then(() => {
+      setToast('CAS 번호 복사됨');
+      setTimeout(() => setToast(null), 2000);
+    });
+  };
 
   useEffect(() => {
     const found = getChemicalById(params.id);
@@ -339,6 +437,9 @@ export default function ChemicalDetailPage() {
           )}
         </div>
 
+        {/* 물리화학적 특성 */}
+        {chemical.physical_properties && <PhysicalPropertiesCard props={chemical.physical_properties} />}
+
         {/* 역할 탭 */}
         <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
           {ROLES.map((role) => (
@@ -363,11 +464,21 @@ export default function ChemicalDetailPage() {
           </h2>
           {activeRole === 'RES' && <RESPanel protocol={chemical.res_protocol} />}
           {activeRole === 'EMS' && <EMSPanel protocol={chemical.ems_protocol} />}
-          {activeRole === 'MED' && <MEDPanel protocol={chemical.med_protocol} />}
+          {activeRole === 'MED' && <MEDPanel chemical={chemical} />}
           {activeRole === 'DM' && <DMPanel protocol={chemical.dm_protocol} />}
           {activeRole === 'CSA' && <CSAPanel protocol={chemical.csa_protocol} />}
         </div>
+
+        {/* 외부 MSDS 참조 */}
+        <ExternalMSDSCard chemical={chemical} onCopy={copyCas} />
       </div>
+
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50">
+          {toast}
+        </div>
+      )}
+
       <footer className="max-w-3xl mx-auto px-4 py-4 border-t border-slate-200">
         <p className="text-center text-[11px] text-slate-400 tracking-wide">대한화학손상연구회</p>
         <p className="text-center text-[10px] text-slate-300">만든이 정회원 정기홍</p>

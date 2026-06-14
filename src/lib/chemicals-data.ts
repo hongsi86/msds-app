@@ -230,6 +230,24 @@ export const CHEMICALS: Chemical[] = [
       ],
       dispersion_model: "ALOHA 또는 KORA 모델 사용 — 기상 조건(풍속, 온도, 안정도) 입력 필수",
     },
+    physical_properties: {
+      boiling_point_c: 337,
+      melting_point_c: 10,
+      vapor_pressure_mmhg: 0.001,
+      vapor_density: 3.4,
+      specific_gravity: 1.84,
+      ph: 0.3,
+      solubility_water: "혼화 (다량 발열)",
+    },
+    toxicity_data: {
+      ld50_oral_rat_mg_kg: 2140,
+      lc50_inhalation_rat: { value: 510, unit: "mg/m3", hours: 2 },
+      iarc_carcinogen: "1",
+      acgih_carcinogen: "A2",
+      twa: { value: 0.2, unit: "mg/m3" },
+      stel: { value: 3, unit: "mg/m3" },
+      idlh: { value: 15, unit: "mg/m3" },
+    },
   },
 
   // ────────────────────────────────────────────
@@ -463,6 +481,23 @@ export const CHEMICALS: Chemical[] = [
       ],
       dispersion_model: "ALOHA 또는 PHAST — 대기 안정도(Pasquill class), 풍속, 누출률 입력 필수",
     },
+    physical_properties: {
+      boiling_point_c: -33.3,
+      melting_point_c: -77.7,
+      flash_point_c: 132,
+      vapor_pressure_mmhg: 6460,
+      vapor_density: 0.59,
+      specific_gravity: 0.682,
+      ph: 11.7,
+      solubility_water: "매우 잘 녹음 (700배 부피)",
+    },
+    toxicity_data: {
+      ld50_oral_rat_mg_kg: 350,
+      lc50_inhalation_rat: { value: 7338, unit: "ppm", hours: 1 },
+      twa: { value: 25, unit: "ppm" },
+      stel: { value: 35, unit: "ppm" },
+      idlh: { value: 300, unit: "ppm" },
+    },
   },
 
   // ────────────────────────────────────────────
@@ -691,6 +726,21 @@ export const CHEMICALS: Chemical[] = [
         "관련 시설 업무 정지 명령 검토 (행정 조치)",
       ],
       dispersion_model: "ALOHA / PHAST / CAMEO — 대기 안정도, 온도, 풍속, 지형 입력",
+    },
+    physical_properties: {
+      boiling_point_c: -34,
+      melting_point_c: -101,
+      vapor_pressure_mmhg: 5089,
+      vapor_density: 2.47,
+      specific_gravity: 1.41,
+      solubility_water: "보통 (HOCl·HCl 생성)",
+    },
+    toxicity_data: {
+      lc50_inhalation_rat: { value: 293, unit: "ppm", hours: 1 },
+      iarc_carcinogen: "3",
+      twa: { value: 0.5, unit: "ppm" },
+      stel: { value: 1, unit: "ppm" },
+      idlh: { value: 10, unit: "ppm" },
     },
   },
 
@@ -1344,6 +1394,20 @@ export const CHEMICALS: Chemical[] = [
       admin_actions: ["NICS 즉시 보고", "반도체·화학공장 안전점검", "재발방지대책"],
       dispersion_model: "ALOHA / PHAST",
     },
+    physical_properties: {
+      boiling_point_c: 19.5,
+      melting_point_c: -83.6,
+      vapor_pressure_mmhg: 783,
+      vapor_density: 0.92,
+      specific_gravity: 0.99,
+      solubility_water: "잘 녹음 (불화수소산 생성)",
+    },
+    toxicity_data: {
+      lc50_inhalation_rat: { value: 1276, unit: "ppm", hours: 1 },
+      twa: { value: 0.5, unit: "ppm" },
+      stel: { value: 2, unit: "ppm" },
+      idlh: { value: 30, unit: "ppm" },
+    },
   },
 
   // ────────────────────────────────────────────
@@ -1542,6 +1606,19 @@ export const CHEMICALS: Chemical[] = [
       environmental_checks: ["실내 CO 농도", "연소 설비 점검"],
       admin_actions: ["원인 시설 점검", "보일러/난방기구 안전 조치"],
       dispersion_model: "실내 환기 모델 적용",
+    },
+    physical_properties: {
+      boiling_point_c: -191.5,
+      melting_point_c: -205,
+      vapor_density: 0.97,
+      specific_gravity: 0.789,
+      solubility_water: "거의 녹지 않음",
+    },
+    toxicity_data: {
+      lc50_inhalation_rat: { value: 1807, unit: "ppm", hours: 4 },
+      twa: { value: 30, unit: "ppm" },
+      stel: { value: 200, unit: "ppm" },
+      idlh: { value: 1200, unit: "ppm" },
     },
   },
 
