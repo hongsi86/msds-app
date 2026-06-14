@@ -19,6 +19,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "137",
+      erg_action_summary: "ERG 137 권고: 초기 격리 최소 50m. 누출 확대·화재 시 풍하 800m 대피",
       water_reactive: true,
       water_reaction_note: "물 희석 시 다량 발열 — 다량의 물로 한꺼번에 희석할 것. 소량 물 직접 분사는 비산·증기 발생",
       scene_approach: [
@@ -950,6 +951,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "130",
+      erg_action_summary: "ERG 130 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 액체 표면에 떠 화재 확산 가능",
       scene_approach: [
@@ -1170,6 +1172,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "157",
+      erg_action_summary: "ERG 157 권고: 초기 격리 최소 50m. 누출 확대 시 풍하 100m 대피",
       water_reactive: false,
       water_reaction_note: "물 희석 시 발열·HCl 증기 발생 — 다량의 물 한 번에",
       scene_approach: [
@@ -1560,6 +1563,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "131",
+      erg_action_summary: "ERG 131 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
       water_reactive: false,
       water_reaction_note: "물에 잘 녹음 — 일반형 거품 효과 떨어짐, 알콜 저항성 거품 사용",
       scene_approach: [
@@ -1654,6 +1658,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "130",
+      erg_action_summary: "ERG 130 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 수면에 떠 화재 확산",
       scene_approach: [
@@ -1839,6 +1844,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "154",
+      erg_action_summary: "ERG 154 권고: 초기 격리 최소 50m. 분진·미스트 발생 시 풍하 100m",
       water_reactive: true,
       water_reaction_note: "물에 녹을 때 다량 발열 — 다량의 물로 한 번에 희석",
       scene_approach: [
@@ -1925,6 +1931,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "143",
+      erg_action_summary: "ERG 143 권고: 초기 격리 최소 50m. 분해·화재 시 풍하 800m 대피",
       water_reactive: false,
       water_reaction_note: "물에 잘 녹음 — 분무 주수로 희석 가능",
       scene_approach: [
@@ -2009,6 +2016,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "132",
+      erg_action_summary: "ERG 132 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
       water_reactive: false,
       water_reaction_note: "물에 잘 녹음 — 분무 주수로 증기 흡수 가능",
       scene_approach: [
@@ -2099,6 +2107,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "127",
+      erg_action_summary: "ERG 127 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
       water_reactive: false,
       water_reaction_note: "물에 잘 녹음 — 일반형 거품 효과 떨어짐, 알콜 저항성 거품 사용",
       scene_approach: [
@@ -2184,6 +2193,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "130",
+      erg_action_summary: "ERG 130 권고: 초기 격리 최소 50m. 화재 시 풍하 800m 대피",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 수면에 떠 화재 확산",
       scene_approach: [
@@ -2269,6 +2279,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "157",
+      erg_action_summary: "ERG 157 권고: 초기 격리 최소 50m. 누출 확대 시 풍하 100m 대피",
       water_reactive: true,
       water_reaction_note: "물 희석 시 다량 발열·갈색 NO2 증기 발생",
       scene_approach: [
@@ -2359,6 +2370,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "153",
+      erg_action_summary: "ERG 153 권고: 초기 격리 최소 50m. 누출 확대 시 풍하 100m 대피",
       water_reactive: false,
       water_reaction_note: "물에 약간 녹음",
       scene_approach: [
@@ -2737,6 +2749,7 @@ export const CHEMICALS: Chemical[] = [
     res_protocol: {
       ppe_level: "B",
       erg_guide_number: "151",
+      erg_action_summary: "ERG 151 권고: 초기 격리 최소 50m. 누출 확대 시 풍하 100m 대피",
       water_reactive: false,
       water_reaction_note: "물에 녹지 않음 — 액체 침강(공기보다 5배 무거움)",
       scene_approach: [

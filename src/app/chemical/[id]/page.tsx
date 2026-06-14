@@ -49,8 +49,38 @@ function RouteCard({ label, text }: { label: string; text?: string }) {
 
 function RESPanel({ protocol }: { protocol: Chemical['res_protocol'] }) {
   const dist = protocol.erg_distance;
+  const summary = protocol.erg_action_summary;
   return (
     <div className="space-y-4">
+      {/* 이격거리표 (정량) — ERG2024 표1 등재 물질 우선 표시 */}
+      {dist && (
+        <div>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">📐 이격거리 (ERG2024 표1)</p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
+              <p className="font-semibold text-slate-600 mb-1">소량 누출 (≤208L)</p>
+              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.small_spill}m</span></p>
+              <p className="text-slate-500 mt-1">방호 낮 {dist.protective_action_km.small_day}km</p>
+              <p className="text-slate-500">방호 밤 {dist.protective_action_km.small_night}km</p>
+            </div>
+            <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+              <p className="font-semibold text-red-700 mb-1">대량 누출 (&gt;208L)</p>
+              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.large_spill}m</span></p>
+              <p className="text-red-600 mt-1">방호 낮 {dist.protective_action_km.large_day}km</p>
+              <p className="text-red-700 font-semibold">방호 밤 {dist.protective_action_km.large_night}km</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ERG 정성 안내 (표1 미등재 물질의 주황색 지침 권고) */}
+      {!dist && summary && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+          <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1">📐 초기 격리·방호 거리</p>
+          <p className="text-sm text-slate-800">{summary}</p>
+        </div>
+      )}
+
       {/* PPE + ERG 지침 */}
       <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
         <div className="flex items-center gap-3">
@@ -72,27 +102,6 @@ function RESPanel({ protocol }: { protocol: Chemical['res_protocol'] }) {
           {protocol.water_reaction_note && (
             <p className="text-sm text-amber-900">{protocol.water_reaction_note}</p>
           )}
-        </div>
-      )}
-
-      {/* 이격거리표 */}
-      {dist && (
-        <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">📐 이격거리 (ERG2024 표1)</p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
-              <p className="font-semibold text-slate-600 mb-1">소량 누출 (≤208L)</p>
-              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.small_spill}m</span></p>
-              <p className="text-slate-500 mt-1">방호 낮 {dist.protective_action_km.small_day}km</p>
-              <p className="text-slate-500">방호 밤 {dist.protective_action_km.small_night}km</p>
-            </div>
-            <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-              <p className="font-semibold text-red-700 mb-1">대량 누출 (&gt;208L)</p>
-              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.large_spill}m</span></p>
-              <p className="text-red-600 mt-1">방호 낮 {dist.protective_action_km.large_day}km</p>
-              <p className="text-red-700 font-semibold">방호 밤 {dist.protective_action_km.large_night}km</p>
-            </div>
-          </div>
         </div>
       )}
 
@@ -336,7 +345,7 @@ export default function ChemicalDetailPage() {
             <button
               key={role.key}
               onClick={() => setActiveRole(role.key)}
-              className={`shrink-0 text-xs px-3 py-2 rounded-lg border transition-all ${
+              className={`shrink-0 text-sm font-medium px-4 py-3 rounded-lg border transition-all ${
                 activeRole === role.key
                   ? role.activeColor
                   : 'border-slate-200 text-slate-400 hover:text-slate-600 bg-white'

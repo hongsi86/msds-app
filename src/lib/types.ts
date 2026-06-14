@@ -32,6 +32,7 @@ export interface RESProtocol {
   ppe_level: "A" | "B" | "C" | "D";
   erg_guide_number?: string;
   erg_distance?: ERGDistance;
+  erg_action_summary?: string;
   water_reactive: boolean;
   water_reaction_note?: string;
   scene_approach: string[];
