@@ -1,7 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import type { Chemical } from '@/lib/types';
+import { AiDisclaimer } from '@/components/ai-disclaimer';
 
 interface SearchResult {
   id: string;
@@ -35,6 +37,16 @@ interface AIEstimation {
   confidence: '높음' | '중간' | '낮음';
   reasoning: string;
   immediate_actions: string[];
+}
+
+function toSearchResult(c: Chemical): SearchResult {
+  return {
+    id: c.id,
+    name: c.name_ko,
+    cas_number: c.cas_number,
+    un_number: c.un_number,
+    description: `${c.name_en} · ${c.hazard_class}`,
+  };
 }
 
 function confidenceBadge(c: AIEstimation['confidence']) {
@@ -377,42 +389,34 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
   const [aiResults, setAiResults] = useState<AISearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiQuery, setAiQuery] = useState<string | null>(null);
+  const [aiError, setAiError] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const voice = useVoice();
 
-  useEffect(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    const q = query.trim();
-    if (!q) { setResults([]); setAiResults([]); return; }
+  // AI 검색은 비용·환각 위험이 있어 키 입력마다 부르지 않는다 — 버튼을 누르거나 검증 데이터가 0건일 때만.
+  const runAi = useCallback(async (q: string) => {
+    abortRef.current?.abort();
+    const abort = new AbortController();
+    abortRef.current = abort;
+    setAiQuery(q);
+    setAiError('');
+    setAiResults([]);
+    setAiLoading(true);
 
-    timerRef.current = setTimeout(async () => {
-      if (abortRef.current) abortRef.current.abort();
-      const abort = new AbortController();
-      abortRef.current = abort;
-
-      setLoading(true);
-      setAiLoading(true);
-      setAiResults([]);
-
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setResults(Array.isArray(data) ? data : data.results ?? []);
-        }
-      } catch { /* ignore */ }
-      setLoading(false);
-
-      try {
-        const res = await fetch('/api/search-ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: q }),
-          signal: abort.signal,
-        });
-        if (!res.ok || !res.body) { setAiLoading(false); return; }
-
+    try {
+      const res = await fetch('/api/search-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+        signal: abort.signal,
+      });
+      if (!res.ok || !res.body) {
+        const err = await res.json().catch(() => ({}));
+        setAiError(err?.error ?? `AI 검색 오류 (${res.status})`);
+      } else {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let accumulated = '';
@@ -429,17 +433,48 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
         if (final) {
           try { setAiResults(JSON.parse(final[0])); } catch { /* parse error */ }
         }
-      } catch (e) {
-        if (e instanceof DOMException && e.name === 'AbortError') { /* expected */ }
       }
-      setAiLoading(false);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+      setAiError('네트워크 오류로 AI 검색을 하지 못했습니다.');
+    }
+    setAiLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    abortRef.current?.abort();
+    setAiResults([]);
+    setAiQuery(null);
+    setAiError('');
+    setAiLoading(false);
+    const q = query.trim();
+    if (!q) { setResults([]); return; }
+
+    timerRef.current = setTimeout(async () => {
+      setLoading(true);
+      let local: SearchResult[] = [];
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        if (res.ok) {
+          const data = await res.json();
+          local = ((data.results ?? []) as Chemical[]).map(toSearchResult);
+        }
+      } catch { /* 오프라인 등 */ }
+      setResults(local);
+      setLoading(false);
+      if (local.length === 0 && q.length >= 2) {
+        aiTimerRef.current = setTimeout(() => runAi(q), 500);
+      }
     }, 300);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      if (abortRef.current) abortRef.current.abort();
+      if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+      abortRef.current?.abort();
     };
-  }, [query]);
+  }, [query, runAi]);
 
   return (
     <div className="flex flex-col gap-3 h-full">
@@ -492,15 +527,30 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
           </>
         )}
 
+        {!loading && !aiLoading && query.trim().length >= 2 && results.length > 0 && aiQuery !== query.trim() && (
+          <button
+            onClick={() => runAi(query.trim())}
+            className="w-full rounded-2xl border border-dashed border-amber-300 bg-amber-50/50 px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-50"
+          >
+            검증 데이터 밖의 관련 물질 AI로 찾기
+          </button>
+        )}
+
+        {aiError && (
+          <div className="rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3">
+            <p className="text-xs text-rose-600">{aiError}</p>
+          </div>
+        )}
+
         {query.trim() && (aiLoading || aiResults.length > 0) && (
           <>
             <div className="flex items-center gap-2 px-1 mt-2">
-              <p className="text-[11px] text-amber-600 font-semibold uppercase tracking-wider">AI 검색 결과</p>
+              <p className="text-xs text-amber-600 font-semibold uppercase tracking-wider">AI 검색 결과</p>
               {aiLoading && (
                 <span className="inline-block w-3 h-3 border-2 border-amber-200 border-t-amber-500 rounded-full animate-spin" />
               )}
             </div>
-            <p className="text-[10px] text-slate-400 px-1 -mt-1">AI 생성 참고용 &middot; 공식 MSDS 확인 필요</p>
+            <AiDisclaimer />
             {aiLoading && aiResults.length === 0 && <><SkeletonCard /><SkeletonCard /></>}
             {aiResults.map((item, i) => (
               <AISearchResultCard key={`${item.cas_number}-${i}`} item={item} onSpeak={voice.speak} />
@@ -600,6 +650,7 @@ function WindowB({ onSearchName }: { onSearchName: (name: string) => void }) {
         {!loading && estimations.length === 0 && !error && (
           <EmptyState icon="&#128173;" text="증상, 냄새, 색깔, 장소 등을 자세히 설명할수록 정확도가 높아집니다" />
         )}
+        {estimations.length > 0 && <AiDisclaimer />}
         {estimations.map((item, i) => (
           <AIEstimationCard
             key={`${item.chemical_name}-${i}`}
@@ -611,6 +662,15 @@ function WindowB({ onSearchName }: { onSearchName: (name: string) => void }) {
       </div>
     </div>
   );
+}
+
+/** /?q=염소 로 들어오면(사진 식별 결과 등) 검색창을 채운다 */
+function QueryParamSync({ onQuery }: { onQuery: (q: string) => void }) {
+  const q = useSearchParams().get('q');
+  useEffect(() => {
+    if (q) onQuery(q);
+  }, [q, onQuery]);
+  return null;
 }
 
 export default function Home() {
@@ -625,6 +685,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col">
+      <Suspense fallback={null}>
+        <QueryParamSync onQuery={handleSearchFromEstimation} />
+      </Suspense>
 
       {/* 헤더 */}
       <header className="shrink-0 sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200">

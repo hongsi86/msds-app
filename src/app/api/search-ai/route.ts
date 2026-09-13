@@ -1,7 +1,10 @@
 import { streamText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { jsonError, readJson } from '@/lib/api-guard';
 
 export const maxDuration = 60;
+
+const MAX_QUERY = 100;
 
 const SYSTEM_PROMPT = `당신은 KOSHA MSDS 화학물질 데이터베이스 전문 검색 엔진입니다. ERG 2024, NFPA, GHS 국제 표준에 정통한 화학물질 검색 전문가로서, 사용자가 입력한 검색어에 매칭되는 화학물질을 최대한 정확하고 풍부하게 찾아 반환합니다.
 
@@ -52,8 +55,8 @@ const SYSTEM_PROMPT = `당신은 KOSHA MSDS 화학물질 데이터베이스 전�
 2. 정확히 일치하는 물질을 먼저, 관련/유사 물질을 이어서 제시
 3. 각 물질의 MSDS 핵심 정보를 정확하게 포함
 4. danger_level: 1(낮음) ~ 4(매우 높음) — GHS 위험도 기준
-5. first_aid_summary는 각 경로별 핵심 응급처치만 간결하게 작성
-6. **hazard_class에 ERG 지침번호(3자리, 예: "ERG 지침 137 / Class 8 부식성")와 물 반응성 여부를 한 문장으로 포함하십시오.** appearance에는 증기 비중(공기 대비)과 인화점이 있으면 짧게 명시.
+5. first_aid_summary는 경로별 일반 원칙만 간결하게 작성하고, **약물명·용량·농도 같은 수치는 쓰지 마십시오**
+6. hazard_class에는 GHS 위험성 분류와 물 반응성 여부만 쓰십시오. **ERG 지침번호·이격거리 등 수치는 쓰지 마십시오** — 앱의 검증 데이터에서만 확인합니다.
 
 ## 응답 규칙
 - 반드시 JSON 배열만 출력하십시오
@@ -82,20 +85,16 @@ const SYSTEM_PROMPT = `당신은 KOSHA MSDS 화학물질 데이터베이스 전�
 ]`;
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const query: string | undefined = body?.query;
+  const body = await readJson(req);
+  const query = typeof body?.query === 'string' ? body.query.trim() : '';
 
-  if (!query || query.trim().length < 1) {
-    return new Response(
-      JSON.stringify({ error: '검색어를 입력하세요.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
+  if (!query) return jsonError('검색어를 입력하세요.', 400);
+  if (query.length > MAX_QUERY) return jsonError(`검색어는 ${MAX_QUERY}자 이내로 입력하세요.`, 400);
 
   const result = streamText({
     model: google('gemini-2.5-flash'),
     system: SYSTEM_PROMPT,
-    prompt: `검색어: "${query.trim()}"`,
+    prompt: `검색어: "${query}"`,
   });
 
   return result.toTextStreamResponse();

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
+import { AiDisclaimer } from '@/components/ai-disclaimer';
 
 interface VisionResult {
   chemical_name: string;
@@ -12,6 +13,23 @@ interface VisionResult {
   hazard_class?: string;
   danger_level?: number;
   immediate_actions: string[];
+}
+
+const MAX_EDGE_PX = 1280;
+
+/** 휴대폰 원본(수 MB)을 그대로 보내면 Vercel 4.5MB 본문 한도에 걸린다 — 긴 변 1280px JPEG 로 줄인다 */
+async function downscaleImage(dataUrl: string): Promise<string> {
+  const img = new Image();
+  img.src = dataUrl;
+  await img.decode();
+  const scale = Math.min(1, MAX_EDGE_PX / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.naturalWidth * scale);
+  canvas.height = Math.round(img.naturalHeight * scale);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return dataUrl;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.8);
 }
 
 function confidenceBadge(c: string) {
@@ -68,11 +86,12 @@ export default function VisionPage() {
     if (!videoRef.current || !canvasRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const scale = Math.min(1, MAX_EDGE_PX / Math.max(video.videoWidth, video.videoHeight));
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
     setCapturedImage(dataUrl);
     stopCamera();
@@ -82,11 +101,15 @@ export default function VisionPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      setCapturedImage(reader.result as string);
+    reader.onload = async () => {
       setResults([]);
-      setError('');
       stopCamera();
+      try {
+        setCapturedImage(await downscaleImage(reader.result as string));
+        setError('');
+      } catch {
+        setError('이미지를 읽을 수 없습니다. 다른 사진을 선택해 주세요.');
+      }
     };
     reader.readAsDataURL(file);
   }, [stopCamera]);
@@ -227,7 +250,8 @@ export default function VisionPage() {
 
         {results.length > 0 && (
           <div className="space-y-2">
-            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider px-1">식별 결과</p>
+            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider px-1">식별 결과</p>
+            <AiDisclaimer />
             {results.map((item, i) => (
               <div key={i} className="rounded-2xl bg-white border border-slate-200 p-4 space-y-3 shadow-sm">
                 <div className="flex items-start justify-between gap-2">

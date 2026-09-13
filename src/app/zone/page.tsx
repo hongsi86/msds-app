@@ -2,42 +2,17 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-
-interface ZoneData {
-  hot: number;
-  warm: number;
-  cold: number;
-  windSpread: number;
-  note?: string;
-}
-
-const ERG_ZONES: Record<string, ZoneData> = {
-  '기본값':        { hot: 25,  warm: 50,  cold: 100, windSpread: 2.0, note: '미확인 물질 — 보수적 접근' },
-  '황산':          { hot: 25,  warm: 50,  cold: 100, windSpread: 1.5 },
-  '염산':          { hot: 30,  warm: 60,  cold: 100, windSpread: 2.0 },
-  '암모니아':      { hot: 30,  warm: 100, cold: 200, windSpread: 2.5, note: '가스 누출 시 풍하방향 800m 확대 고려' },
-  '염소':          { hot: 60,  warm: 200, cold: 400, windSpread: 3.0, note: '소량 누출도 넓은 격리 필요' },
-  '황화수소':      { hot: 30,  warm: 100, cold: 300, windSpread: 2.5, note: '무취감지점(100ppm) 이상 시 즉시 대피' },
-  '톨루엔':        { hot: 25,  warm: 50,  cold: 100, windSpread: 1.5 },
-  '불화수소':      { hot: 30,  warm: 100, cold: 200, windSpread: 2.5, note: 'HF — 극소량도 치명적, 최대 격리' },
-  '시안화수소':    { hot: 60,  warm: 200, cold: 400, windSpread: 3.0, note: 'HCN — 즉시 치명, 최대 격리' },
-  '일산화탄소':    { hot: 25,  warm: 50,  cold: 100, windSpread: 2.0 },
-  '메탄올':        { hot: 25,  warm: 50,  cold: 100, windSpread: 1.5 },
-  '벤젠':          { hot: 30,  warm: 60,  cold: 150, windSpread: 2.0 },
-  '포스겐':        { hot: 100, warm: 300, cold: 600, windSpread: 3.0, note: 'COCl₂ — 지연성 폐부종, 최대 격리' },
-  '가솔린':        { hot: 50,  warm: 100, cold: 200, windSpread: 2.0, note: '화재·폭발 위험 — 점화원 제거' },
-  '휘발유':        { hot: 50,  warm: 100, cold: 200, windSpread: 2.0, note: '화재·폭발 위험 — 점화원 제거' },
-  'LPG':           { hot: 100, warm: 200, cold: 400, windSpread: 2.5, note: '폭발 위험 — BLEVE 가능' },
-  'LNG':           { hot: 100, warm: 200, cold: 400, windSpread: 2.5, note: '극저온 + 폭발 위험' },
-  '수산화나트륨':  { hot: 10,  warm: 25,  cold: 50,  windSpread: 1.0, note: '비휘발성 — 접촉 위험 위주' },
-  '과산화수소':    { hot: 25,  warm: 50,  cold: 100, windSpread: 1.5 },
-  '포름알데히드':  { hot: 25,  warm: 50,  cold: 100, windSpread: 2.0 },
-  '아세톤':        { hot: 25,  warm: 50,  cold: 100, windSpread: 1.5 },
-  '자일렌':        { hot: 25,  warm: 50,  cold: 100, windSpread: 1.5 },
-  '질산':          { hot: 30,  warm: 60,  cold: 150, windSpread: 2.0, note: 'NOx 발생 가능 — 갈색 연기 주의' },
-};
-
-const CHEMICAL_LIST = Object.keys(ERG_ZONES).filter(k => k !== '기본값');
+import { CHEMICALS } from '@/lib/chemicals-data';
+import {
+  ZONE_LABEL,
+  classifyPosition,
+  defaultDayNight,
+  getErgZones,
+  type DayNight,
+  type SpillSize,
+} from '@/lib/erg';
+import { ChemicalPicker, SpillDayNightToggle, resolveChemParam } from '@/components/chemical-picker';
+import { ZoneSummary } from '@/components/zone-summary';
 
 const WIND_DIRS = [
   { label: 'N',  labelKo: '북',   deg: 0 },
@@ -50,22 +25,7 @@ const WIND_DIRS = [
   { label: 'NW', labelKo: '북서', deg: 315 },
 ] as const;
 
-function getZoneInfo(distance: number, zone: ZoneData, windAngle: number, facingAngle: number) {
-  const downwind = (windAngle + 180) % 360;
-  let angleDiff = Math.abs(facingAngle - downwind);
-  if (angleDiff > 180) angleDiff = 360 - angleDiff;
-  const isDownwind = angleDiff <= 60;
-  const multiplier = isDownwind ? zone.windSpread : 1.0;
-
-  const hotDist = zone.hot * multiplier;
-  const warmDist = zone.warm * multiplier;
-  const coldDist = zone.cold * multiplier;
-
-  if (distance <= hotDist) return { zone: 'HOT', color: '#dc2626', bgColor: 'rgba(220,38,38,0.20)', label: 'HOT ZONE — 즉시위험구역', hotDist, warmDist, coldDist, isDownwind };
-  if (distance <= warmDist) return { zone: 'WARM', color: '#ea580c', bgColor: 'rgba(234,88,12,0.15)', label: 'WARM ZONE — 제독/대기구역', hotDist, warmDist, coldDist, isDownwind };
-  if (distance <= coldDist) return { zone: 'COLD', color: '#2563eb', bgColor: 'rgba(37,99,235,0.12)', label: 'COLD ZONE — 안전구역 경계', hotDist, warmDist, coldDist, isDownwind };
-  return { zone: 'SAFE', color: '#16a34a', bgColor: 'rgba(22,163,74,0.10)', label: '안전거리 — 격리구역 외부', hotDist, warmDist, coldDist, isDownwind };
-}
+const SLIDER_MAX = 1000;
 
 export default function ZonePage() {
   return (
@@ -109,7 +69,7 @@ function DistanceMeasureBar({ onDistanceChange, viewHeight }: { onDistanceChange
   useEffect(() => {
     if (!active) return;
     const dist = estimateDistance(refObj.heightCm, barHeightPx, viewHeight);
-    onDistanceChange(Math.min(500, dist));
+    onDistanceChange(Math.min(SLIDER_MAX, dist));
   }, [active, barTop, barBottom, refObj, barHeightPx, viewHeight, onDistanceChange]);
 
   const handlePointerDown = useCallback((handle: 'top' | 'bottom') => (e: React.PointerEvent) => {
@@ -163,11 +123,14 @@ function DistanceMeasureBar({ onDistanceChange, viewHeight }: { onDistanceChange
                 : 'bg-white/70 border-slate-200 text-slate-500'}`}
             >
               <span className="text-sm block">{obj.icon}</span>
-              <span className="text-[9px] block leading-tight">{obj.label}</span>
-              <span className="text-[8px] block text-slate-400">{obj.heightCm}cm</span>
+              <span className="text-xs block leading-tight">{obj.label}</span>
+              <span className="text-xs block text-slate-400">{obj.heightCm}cm</span>
             </button>
           ))}
         </div>
+        <p className="rounded-lg bg-white/80 px-2 py-1 text-xs text-slate-500 max-w-[16rem]">
+          화면 높이 기준 대략값입니다. 기기·확대에 따라 크게 틀릴 수 있습니다.
+        </p>
       </div>
 
       {/* 측정 바 */}
@@ -207,7 +170,7 @@ function DistanceMeasureBar({ onDistanceChange, viewHeight }: { onDistanceChange
           style={{ top: `${(barTop + barBottom) / 2 * 100}%` }}
         >
           <p className="text-blue-600 text-xs font-bold whitespace-nowrap">{dist}m</p>
-          <p className="text-[9px] text-slate-500 whitespace-nowrap">{refObj.icon} {refObj.heightCm}cm 기준</p>
+          <p className="text-xs text-slate-500 whitespace-nowrap">{refObj.icon} {refObj.heightCm}cm 기준</p>
         </div>
 
         <div
@@ -222,18 +185,17 @@ function DistanceMeasureBar({ onDistanceChange, viewHeight }: { onDistanceChange
 function ZoneContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialChem = searchParams.get('chem') ?? '';
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const cameraContainerRef = useRef<HTMLDivElement>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState('');
-  const [chemical, setChemical] = useState(initialChem || '기본값');
+  const [chemId, setChemId] = useState(() => resolveChemParam(searchParams.get('chem')));
+  const [spill, setSpill] = useState<SpillSize>('large');
+  const [dayNight, setDayNight] = useState<DayNight>(() => defaultDayNight());
   const [distance, setDistance] = useState(50);
   const [windDir, setWindDir] = useState(0);
   const [facingDir, setFacingDir] = useState(0);
-  const [showChemList, setShowChemList] = useState(false);
-  const [chemSearch, setChemSearch] = useState('');
   const [useCompass, setUseCompass] = useState(false);
   const [cameraViewHeight, setCameraViewHeight] = useState(400);
 
@@ -286,16 +248,28 @@ function ZoneContent() {
   useEffect(() => { startCamera(); }, [startCamera]);
 
   useEffect(() => {
+    const video = videoRef.current;
     return () => {
-      if (videoRef.current?.srcObject) {
-        (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+      if (video?.srcObject) {
+        (video.srcObject as MediaStream).getTracks().forEach(t => t.stop());
       }
     };
   }, []);
 
-  const zone = ERG_ZONES[chemical] ?? ERG_ZONES['기본값'];
-  const info = getZoneInfo(distance, zone, windDir, facingDir);
-  const filteredChems = CHEMICAL_LIST.filter(c => c.includes(chemSearch));
+  const chemical = CHEMICALS.find((c) => c.id === chemId);
+  const zones = getErgZones(chemical, { spill, dayNight });
+  // 사고 지점을 바라보고 있으므로 사고 지점에서 본 내 방위는 정반대.
+  // 나침반이 꺼져 있으면 방향을 모르므로 가장 불리한 경우(풍하)로 가정한다.
+  const bearingFromSource = useCompass ? (facingDir + 180) % 360 : (windDir + 180) % 360;
+  const cls = zones ? classifyPosition(zones, distance, bearingFromSource, windDir) : null;
+  const meta = cls ? ZONE_LABEL[cls.status] : null;
+
+  const pct = (m: number) => `${Math.min(100, (m / SLIDER_MAX) * 100)}%`;
+  const sliderBg = zones
+    ? zones.protectiveM
+      ? `linear-gradient(to right, #dc2626 0%, #dc2626 ${pct(zones.isolationM)}, #ea580c ${pct(zones.isolationM)}, #ea580c 100%)`
+      : `linear-gradient(to right, #dc2626 0%, #dc2626 ${pct(zones.isolationM)}, #94a3b8 ${pct(zones.isolationM)}, #94a3b8 100%)`
+    : '#94a3b8';
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col">
@@ -324,30 +298,38 @@ function ZoneContent() {
         )}
 
         {/* Zone 오버레이 색상 */}
-        <div className="absolute inset-0 pointer-events-none transition-colors duration-500" style={{ backgroundColor: info.bgColor }} />
+        {meta && <div className="absolute inset-0 pointer-events-none transition-colors duration-500" style={{ backgroundColor: meta.bg }} />}
 
-        {/* 상단: 뒤로가기 + Zone 표시 */}
+        {/* 상단: 뒤로가기 + 구역 표시 */}
         <div className="absolute top-0 left-0 right-0 z-10 safe-area-top">
           <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-            <button onClick={() => router.push('/')} className="w-9 h-9 rounded-full bg-white/80 backdrop-blur shadow-md flex items-center justify-center text-slate-700 text-lg border border-white/50">
+            <button onClick={() => router.push(chemId ? `/chemical/${chemId}` : '/')} className="w-9 h-9 rounded-full bg-white/80 backdrop-blur shadow-md flex items-center justify-center text-slate-700 text-lg border border-white/50">
               ←
             </button>
             <div className="flex-1" />
-            <div className="rounded-full px-4 py-1.5 backdrop-blur font-bold text-sm bg-white/80 shadow-md" style={{ color: info.color, border: `2px solid ${info.color}` }}>
-              {info.zone}
-            </div>
+            {meta && (
+              <div className="rounded-full px-4 py-1.5 backdrop-blur font-bold text-sm bg-white/80 shadow-md" style={{ color: meta.color, border: `2px solid ${meta.color}` }}>
+                {meta.short}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 중앙: Zone 정보 */}
+        {/* 중앙: 구역 정보 */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 pointer-events-none px-4">
           <p className="text-2xl font-black tracking-tight text-white drop-shadow-lg" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
             {distance}m
           </p>
-          <div className="rounded-2xl px-4 py-2 bg-white/85 backdrop-blur-md shadow-lg border border-white/50">
-            <p className="text-sm font-bold text-center" style={{ color: info.color }}>{info.label}</p>
-            {info.isDownwind && (
-              <p className="text-[11px] text-rose-600 text-center mt-1 font-semibold">⚠ 풍하방향 — 격리거리 {zone.windSpread}배 확대 적용</p>
+          <div className="rounded-2xl px-4 py-2 bg-white/85 backdrop-blur-md shadow-lg border border-white/50 max-w-sm">
+            {meta ? (
+              <p className="text-sm font-bold text-center" style={{ color: meta.color }}>{meta.label}</p>
+            ) : (
+              <p className="text-sm font-bold text-center text-slate-600">
+                거리 수치 없음 — ERG 지침 {chemical?.res_protocol.erg_guide_number ?? ''} 본문 확인
+              </p>
+            )}
+            {!useCompass && zones?.protectiveM && (
+              <p className="text-xs text-rose-600 text-center mt-1 font-semibold">나침반 꺼짐 — 풍하에 있다고 가정해 판정</p>
             )}
           </div>
         </div>
@@ -359,13 +341,13 @@ function ZoneContent() {
               <div className="absolute" style={{ transform: `rotate(${windDir}deg)` }}>
                 <div className="flex flex-col items-center -mt-5">
                   <span className="text-teal-600 text-lg leading-none">↓</span>
-                  <span className="text-[8px] text-teal-600 font-bold">풍</span>
+                  <span className="text-xs text-teal-600 font-bold">풍</span>
                 </div>
               </div>
-              <span className="absolute -top-0.5 text-[10px] font-bold text-rose-600">N</span>
-              <span className="absolute -bottom-0.5 text-[10px] font-bold text-slate-400">S</span>
-              <span className="absolute -right-0.5 text-[10px] font-bold text-slate-400">E</span>
-              <span className="absolute -left-0.5 text-[10px] font-bold text-slate-400">W</span>
+              <span className="absolute -top-0.5 text-xs font-bold text-rose-600">N</span>
+              <span className="absolute -bottom-0.5 text-xs font-bold text-slate-400">S</span>
+              <span className="absolute -right-0.5 text-xs font-bold text-slate-400">E</span>
+              <span className="absolute -left-0.5 text-xs font-bold text-slate-400">W</span>
             </div>
             <div className="w-1.5 h-1.5 rounded-full bg-slate-700 z-10" />
           </div>
@@ -376,76 +358,46 @@ function ZoneContent() {
       </div>
 
       {/* 하단 컨트롤 패널 */}
-      <div className="shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 safe-area-bottom">
+      <div className="shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 safe-area-bottom max-h-[55vh] overflow-y-auto">
         <div className="px-4 pt-3 pb-4 space-y-3 max-w-lg mx-auto">
-
-          {/* 물질 선택 */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowChemList(!showChemList)}
-              className="flex-1 rounded-xl bg-white border border-slate-200 px-3 py-2.5 text-left flex items-center gap-2 shadow-sm"
-            >
-              <span className="text-base">🧪</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-slate-400">선택 물질</p>
-                <p className="text-sm font-semibold text-slate-800 truncate">{chemical}</p>
-              </div>
-              <span className="text-slate-400 text-xs">{showChemList ? '▲' : '▼'}</span>
-            </button>
-          </div>
-
-          {showChemList && (
-            <div className="rounded-xl bg-white border border-slate-200 p-2 max-h-40 overflow-y-auto space-y-1 shadow-sm">
-              <input
-                type="text"
-                value={chemSearch}
-                onChange={e => setChemSearch(e.target.value)}
-                placeholder="물질명 검색..."
-                className="w-full rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 outline-none mb-1"
-              />
-              {filteredChems.map(c => (
-                <button
-                  key={c}
-                  onClick={() => { setChemical(c); setShowChemList(false); setChemSearch(''); }}
-                  className={`w-full text-left rounded-lg px-3 py-2 text-xs transition-colors ${chemical === c ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          )}
+          <ChemicalPicker value={chemId} onChange={setChemId} />
+          <SpillDayNightToggle
+            spill={spill}
+            dayNight={dayNight}
+            onSpill={setSpill}
+            onDayNight={setDayNight}
+            disabled={zones?.source !== 'table'}
+          />
 
           {/* 거리 슬라이더 */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] text-slate-500 font-semibold">📏 추정 거리</p>
+              <p className="text-xs text-slate-500 font-semibold">📏 사고 지점까지 거리</p>
               <p className="text-sm font-bold text-slate-800">{distance}m</p>
             </div>
             <input
               type="range"
               min={5}
-              max={500}
+              max={SLIDER_MAX}
               step={5}
               value={distance}
               onChange={e => setDistance(Number(e.target.value))}
               className="w-full h-2 rounded-full appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, #dc2626 0%, #dc2626 ${(zone.hot / 500) * 100}%, #ea580c ${(zone.hot / 500) * 100}%, #ea580c ${(zone.warm / 500) * 100}%, #2563eb ${(zone.warm / 500) * 100}%, #2563eb ${(zone.cold / 500) * 100}%, #16a34a ${(zone.cold / 500) * 100}%, #16a34a 100%)`,
-              }}
+              style={{ background: sliderBg }}
             />
             <div className="flex justify-between mt-1">
-              <span className="text-[10px] text-slate-400">5m</span>
-              <span className="text-[10px] text-slate-400">500m</span>
+              <span className="text-xs text-slate-400">5m</span>
+              <span className="text-xs text-slate-400">{SLIDER_MAX}m</span>
             </div>
           </div>
 
           {/* 바람 방향 */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] text-slate-500 font-semibold">💨 바람 방향 (불어오는 쪽)</p>
+              <p className="text-xs text-slate-500 font-semibold">💨 바람 방향 (불어오는 쪽)</p>
               <button
                 onClick={() => setUseCompass(!useCompass)}
-                className={`text-[10px] px-2 py-0.5 rounded-full ${useCompass ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' : 'bg-slate-100 text-slate-400 ring-1 ring-slate-200'}`}
+                className={`text-xs px-2 py-0.5 rounded-full ${useCompass ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' : 'bg-slate-100 text-slate-400 ring-1 ring-slate-200'}`}
               >
                 {useCompass ? '🧭 나침반 ON' : '🧭 나침반'}
               </button>
@@ -461,33 +413,13 @@ function ZoneContent() {
                   }`}
                 >
                   <p className="text-xs font-bold">{w.label}</p>
-                  <p className="text-[9px]">{w.labelKo}</p>
+                  <p className="text-xs">{w.labelKo}</p>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Zone 거리 요약 */}
-          <div className="grid grid-cols-3 gap-1.5">
-            <div className="rounded-xl bg-rose-50 border border-rose-200 p-2 text-center">
-              <p className="text-[10px] text-rose-600 font-semibold">HOT</p>
-              <p className="text-sm font-bold text-rose-700">{Math.round(info.hotDist)}m</p>
-            </div>
-            <div className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-center">
-              <p className="text-[10px] text-amber-600 font-semibold">WARM</p>
-              <p className="text-sm font-bold text-amber-700">{Math.round(info.warmDist)}m</p>
-            </div>
-            <div className="rounded-xl bg-sky-50 border border-sky-200 p-2 text-center">
-              <p className="text-[10px] text-sky-600 font-semibold">COLD</p>
-              <p className="text-sm font-bold text-sky-700">{Math.round(info.coldDist)}m</p>
-            </div>
-          </div>
-
-          {zone.note && (
-            <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2">
-              <p className="text-[11px] text-amber-700">⚠ {zone.note}</p>
-            </div>
-          )}
+          <ZoneSummary zones={zones} guide={chemical?.res_protocol.erg_guide_number} summary={chemical?.res_protocol.erg_action_summary} />
         </div>
       </div>
     </div>

@@ -1,7 +1,11 @@
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { jsonError, readJson } from '@/lib/api-guard';
 
 export const maxDuration = 60;
+
+// base64 약 3.5MB. 브라우저에서 1280px 로 줄여 보내므로 정상 사진은 수백 KB 다.
+const MAX_BASE64_LENGTH = 4_800_000;
 
 const SYSTEM_PROMPT = `당신은 화학물질 사고 현장 이미지 분석 전문가입니다. KOSHA MSDS, ERG 2024, GHS, NFPA 기준에 정통합니다.
 
@@ -19,7 +23,7 @@ const SYSTEM_PROMPT = `당신은 화학물질 사고 현장 이미지 분석 전
 - 마크다운 코드 블록, 설명 텍스트 절대 출력 금지
 - 식별 불가 시 빈 배열 [] 출력
 - 최대 3개 물질 추정
-- **immediate_actions에 RES(소방 구조대원·HAZMAT) 관점 즉시 조치를 1~2개 반드시 포함하십시오** — 풍상측 접근 / 초기격리거리(m) / PPE 등급(레벨 A·B·C·D + SCBA) / 물반응성 경고 / 점화원 제거 등.
+- **immediate_actions에는 거리(m·km), 약물 용량, 농도, ERG 지침번호 등 어떤 수치도 쓰지 마십시오** — 수치는 앱의 검증 데이터에서만 확인합니다. 풍상측 접근, 보호장비 착용 전 진입 금지, 물 반응성 확인, 점화원 제거 같은 수치 없는 원칙만 1~2개 포함하십시오.
 
 출력 형식:
 [
@@ -36,15 +40,14 @@ const SYSTEM_PROMPT = `당신은 화학물질 사고 현장 이미지 분석 전
 ]`;
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const imageData: string | undefined = body?.image;
+  const body = await readJson(req);
+  let imageData = typeof body?.image === 'string' ? body.image : '';
+  const prefix = imageData.match(/^data:image\/(?:jpeg|png|webp);base64,/);
+  if (prefix) imageData = imageData.slice(prefix[0].length);
 
-  if (!imageData) {
-    return new Response(
-      JSON.stringify({ error: '이미지 데이터가 필요합니다.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
+  if (!imageData) return jsonError('이미지 데이터가 필요합니다.', 400);
+  if (imageData.length > MAX_BASE64_LENGTH) return jsonError('사진이 너무 큽니다. 다시 촬영해 주세요.', 413);
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(imageData)) return jsonError('이미지 형식이 올바르지 않습니다.', 400);
 
   try {
     const result = await generateText({

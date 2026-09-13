@@ -1,9 +1,12 @@
 import { streamText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { jsonError, readJson } from '@/lib/api-guard';
 
 export const maxDuration = 60;
 
-const SYSTEM_PROMPT = `당신은 대한화학손상연구회 소속 화학물질 사고 전문가입니다. KOSHA MSDS, ERG 2024, NFPA, GHS 기준에 정통하며, 현장 사고 상황에서 화학물질을 신속하고 정확하게 추정하는 역할을 합니다.
+const MAX_DESCRIPTION = 1000;
+
+const SYSTEM_PROMPT = `당신은 화학물질 사고 현장 대응을 돕는 보조 AI입니다. KOSHA MSDS, ERG 2024, NFPA, GHS 기준을 바탕으로 현장 상황에서 의심 화학물질 후보를 추정합니다. 추정은 참고용이며 최종 판단은 현장 지휘관과 공식 자료가 합니다.
 
 ## 입력 유형 판별
 
@@ -96,7 +99,7 @@ const SYSTEM_PROMPT = `당신은 대한화학손상연구회 소속 화학물질
 3. reasoning은 반드시 구체적 단서(냄새, 색깔, 증상, 장소)를 명시하여 작성하십시오.
 4. immediate_actions는 현장 대응자가 즉시 실행 가능한 조치만 포함하십시오.
 5. confidence는 반드시 "높음", "중간", "낮음" 중 하나로만 표기하십시오.
-6. **RES(소방 구조대원·HAZMAT) 관점 즉시조치를 immediate_actions에 1~2개 반드시 포함하십시오.** 예: "풍상측·언덕 위 접근", "초기격리 30m / 방호 0.5km(밤)", "레벨 B + SCBA", "ERG 지침 137 참조", "물반응성 — 직접 강한 물 분사 금지", "둑쌓기로 하수구 유입 차단", "점화원·정전기 제거". 의료·구급 조치만 나열하지 말고, 현장 진입 결정과 통제선 설정 요소를 함께 안내하십시오.
+6. **immediate_actions에는 거리(m·km), 약물명과 용량, 농도(ppm), ERG 지침번호 등 어떤 수치도 쓰지 마십시오.** 수치는 앱의 검증 데이터 카드에서만 확인합니다. 대신 "풍상측·고지대에서 접근", "보호장비 착용 전 진입 금지", "점화원·정전기 제거", "물 반응성 여부 확인 전 직접 물 분사 금지", "둑쌓기로 하수구 유입 차단" 같은 수치 없는 현장 원칙을 1~2개 포함하십시오.
 
 출력 형식:
 [
@@ -110,14 +113,12 @@ const SYSTEM_PROMPT = `당신은 대한화학손상연구회 소속 화학물질
 ]`;
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const description: string | undefined = body?.description;
+  const body = await readJson(req);
+  const description = typeof body?.description === 'string' ? body.description.trim() : '';
 
-  if (!description || description.trim() === '') {
-    return new Response(
-      JSON.stringify({ error: '증상 또는 상황 설명이 필요합니다.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
+  if (!description) return jsonError('증상 또는 상황 설명이 필요합니다.', 400);
+  if (description.length > MAX_DESCRIPTION) {
+    return jsonError(`설명은 ${MAX_DESCRIPTION}자 이내로 입력하세요.`, 400);
   }
 
   const result = streamText({

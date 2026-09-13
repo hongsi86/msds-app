@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import type { Chemical, RoleType } from '@/lib/types';
 import { getChemicalById } from '@/lib/chemicals-data';
@@ -37,6 +38,19 @@ function Section({ title, items }: { title: string; items: string[] }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+// 학회 전문가 감수 체계(Phase 2)가 들어오면 섹션별 감수 배지로 대체한다
+function ReviewPendingBanner() {
+  return (
+    <div className="mb-4 rounded-lg border-2 border-amber-300 bg-amber-50 p-3">
+      <p className="text-sm font-bold text-amber-800">⚠ 학회 전문가 검토 전 내용</p>
+      <p className="mt-1 text-xs leading-relaxed text-amber-900">
+        약물·용량은 대한화학손상연구회 감수가 끝나지 않았습니다. 구급대원 업무범위 밖 투약은 의료지도 하에서만 하고,
+        병원에서는 독성학 자문으로 반드시 확인하십시오.
+      </p>
     </div>
   );
 }
@@ -486,16 +500,30 @@ export default function ChemicalDetailPage() {
           {activeRole === 'RES' && (
             <>
               <RESPanel protocol={chemical.res_protocol} />
+              <div className="grid grid-cols-2 gap-2 mt-4">
+                <Link href={`/map?chem=${chemical.id}`} className="rounded-lg bg-teal-50 border border-teal-200 px-3 py-2.5 text-center text-sm font-semibold text-teal-700">
+                  🗺️ 지도에 이격거리
+                </Link>
+                <Link href={`/zone?chem=${chemical.id}`} className="rounded-lg bg-rose-50 border border-rose-200 px-3 py-2.5 text-center text-sm font-semibold text-rose-700">
+                  📷 카메라 Zone
+                </Link>
+              </div>
               <RadioCard chemical={chemical} position={position} weather={weather} onToast={showToast} />
             </>
           )}
           {activeRole === 'EMS' && (
             <>
+              <ReviewPendingBanner />
               <EMSPanel protocol={chemical.ems_protocol} />
               <HospitalNotifyCard chemical={chemical} position={position} onToast={showToast} />
             </>
           )}
-          {activeRole === 'MED' && <MEDPanel chemical={chemical} />}
+          {activeRole === 'MED' && (
+            <>
+              <ReviewPendingBanner />
+              <MEDPanel chemical={chemical} />
+            </>
+          )}
           {activeRole === 'DM' && <DMPanel protocol={chemical.dm_protocol} />}
           {activeRole === 'CSA' && <CSAPanel protocol={chemical.csa_protocol} />}
         </div>
