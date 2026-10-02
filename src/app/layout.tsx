@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ChemGuard — 화학물질 사고 대응 플랫폼",
   description: "MSDS 기반 역할별 맞춤 화학물질 대응 정보 제공",
-  manifest: "/manifest.json",
+  // manifest 는 app/manifest.ts 가 자동으로 연결한다
+  icons: { apple: "/icons/apple-touch-icon.png" },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

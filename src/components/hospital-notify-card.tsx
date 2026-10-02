@@ -31,6 +31,7 @@ function buildMessage({
   etaMin,
   position,
   note,
+  sentAt,
 }: {
   chemical: Chemical;
   patients: number;
@@ -38,6 +39,8 @@ function buildMessage({
   etaMin: number;
   position?: GeoPoint;
   note: string;
+  /** 보내는 순간의 시각. 미리보기에선 비워 둔다(입력을 고친 시각이 통보 시각으로 남지 않게) */
+  sentAt?: Date;
 }): string {
   const routes = (Object.keys(exposure) as (keyof Exposure)[])
     .filter((k) => exposure[k])
@@ -47,8 +50,10 @@ function buildMessage({
   const loc = position
     ? `위도 ${position.lat.toFixed(4)}, 경도 ${position.lon.toFixed(4)}`
     : '위치 확인 중';
-  const now = new Date();
-  const stamp = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  const p2 = (n: number) => String(n).padStart(2, '0');
+  const stamp = sentAt
+    ? `${p2(sentAt.getHours())}:${p2(sentAt.getMinutes())}:${p2(sentAt.getSeconds())}`
+    : '(보낼 때 기록)';
 
   return [
     '[ChemGuard 응급실 사전 통보]',
@@ -80,10 +85,11 @@ export function HospitalNotifyCard({ chemical, position, onToast }: Props) {
     () => buildMessage({ chemical, patients, exposure, etaMin, position, note }),
     [chemical, patients, exposure, etaMin, position, note]
   );
+  const finalMessage = () => buildMessage({ chemical, patients, exposure, etaMin, position, note, sentAt: new Date() });
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(message);
+      await navigator.clipboard.writeText(finalMessage());
       onToast?.('통보 문안 복사됨');
     } catch {
       onToast?.('복사 실패 — 길게 눌러 직접 복사하세요');
@@ -91,14 +97,14 @@ export function HospitalNotifyCard({ chemical, position, onToast }: Props) {
   };
 
   const sendSms = () => {
-    const url = `sms:?body=${encodeURIComponent(message)}`;
+    const url = `sms:?body=${encodeURIComponent(finalMessage())}`;
     window.location.href = url;
   };
 
   const shareNative = async () => {
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
-        await navigator.share({ title: 'ChemGuard 사전 통보', text: message });
+        await navigator.share({ title: 'ChemGuard 사전 통보', text: finalMessage() });
         return;
       } catch {
         /* fall through */
@@ -111,13 +117,13 @@ export function HospitalNotifyCard({ chemical, position, onToast }: Props) {
 
   return (
     <div className="mt-4 rounded-lg bg-white border border-slate-200 p-3 shadow-sm">
-      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
         🏥 응급실 사전 통보
       </p>
 
       <div className="grid grid-cols-2 gap-2 mb-2">
         <div>
-          <label className="text-[10px] text-slate-500">환자 수</label>
+          <label className="text-xs text-slate-500">환자 수</label>
           <input
             type="number"
             value={patients}
@@ -127,7 +133,7 @@ export function HospitalNotifyCard({ chemical, position, onToast }: Props) {
           />
         </div>
         <div>
-          <label className="text-[10px] text-slate-500">ETA(분)</label>
+          <label className="text-xs text-slate-500">ETA(분)</label>
           <input
             type="number"
             value={etaMin}
@@ -139,13 +145,13 @@ export function HospitalNotifyCard({ chemical, position, onToast }: Props) {
       </div>
 
       <div className="mb-2">
-        <p className="text-[10px] text-slate-500 mb-1">노출 경로</p>
+        <p className="text-xs text-slate-500 mb-1">노출 경로</p>
         <div className="grid grid-cols-4 gap-1">
           {(Object.keys(ROUTE_LABEL) as (keyof Exposure)[]).map((key) => (
             <button
               key={key}
               onClick={() => toggle(key)}
-              className={`rounded px-2 py-1 text-[11px] font-medium border ${
+              className={`rounded px-2 py-1 text-xs font-medium border ${
                 exposure[key]
                   ? 'bg-rose-600 text-white border-rose-700'
                   : 'bg-white text-slate-600 border-slate-200'

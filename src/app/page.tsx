@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import type { Chemical } from '@/lib/types';
+import { searchChemicals } from '@/lib/chemicals-data';
+import { AiDbLink } from '@/components/ai-db-link';
 import { AiDisclaimer } from '@/components/ai-disclaimer';
 
 interface SearchResult {
@@ -20,15 +22,8 @@ interface AISearchResult {
   un_number?: string;
   formula?: string;
   hazard_class: string;
-  danger_level: number;
-  appearance: string;
+  appearance?: string;
   odor?: string;
-  first_aid_summary: {
-    inhalation: string;
-    skin: string;
-    eye: string;
-    ingestion: string;
-  };
 }
 
 interface AIEstimation {
@@ -36,7 +31,6 @@ interface AIEstimation {
   cas_number?: string;
   confidence: '높음' | '중간' | '낮음';
   reasoning: string;
-  immediate_actions: string[];
 }
 
 function toSearchResult(c: Chemical): SearchResult {
@@ -87,12 +81,12 @@ function SearchResultCard({ result, onClick }: { result: SearchResult; onClick: 
         <p className="font-semibold text-slate-800 text-sm leading-snug">{result.name}</p>
         <div className="flex shrink-0 gap-1 flex-wrap justify-end">
           {result.cas_number && (
-            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-[11px] text-sky-700 font-mono">
+            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-xs text-sky-700 font-mono">
               {result.cas_number}
             </span>
           )}
           {result.un_number && (
-            <span className="rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[11px] text-violet-700 font-mono">
+            <span className="rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-xs text-violet-700 font-mono">
               {result.un_number}
             </span>
           )}
@@ -102,81 +96,40 @@ function SearchResultCard({ result, onClick }: { result: SearchResult; onClick: 
         <p className="text-xs text-slate-400 line-clamp-1">{result.description}</p>
       )}
       <div className="flex items-center gap-1 mt-2">
-        <span className="text-[11px] text-slate-400">상세 보기</span>
-        <span className="text-[11px] text-slate-400">&rarr;</span>
+        <span className="text-xs text-slate-400">상세 보기</span>
+        <span className="text-xs text-slate-400">&rarr;</span>
       </div>
     </button>
   );
 }
 
-function AISearchResultCard({ item, onSpeak }: { item: AISearchResult; onSpeak?: (text: string) => void }) {
-  const [expanded, setExpanded] = useState(false);
-
+// AI 가 만든 응급처치 문장은 보여주지도 읽어주지도 않는다 — 검증 카드나 공식 자료로만 보낸다
+function AISearchResultCard({ item }: { item: AISearchResult }) {
   return (
-    <button
-      onClick={() => setExpanded(!expanded)}
-      className="w-full text-left rounded-2xl bg-white border border-amber-200 p-4 active:scale-[0.98] hover:border-amber-300 hover:shadow-md transition-all duration-150 shadow-sm"
-    >
-      <div className="flex items-start justify-between gap-2 mb-1.5">
+    <div className="w-full rounded-2xl bg-white border border-amber-200 p-4 space-y-3 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="shrink-0 rounded-full bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">AI</span>
+          <span className="shrink-0 rounded-full bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-xs font-semibold text-amber-700">AI</span>
           <p className="font-semibold text-slate-800 text-sm leading-snug">{item.name_ko}</p>
         </div>
         <div className="flex shrink-0 gap-1 flex-wrap justify-end">
           {item.cas_number && (
-            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-[11px] text-sky-700 font-mono">
+            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-xs text-sky-700 font-mono">
               {item.cas_number}
             </span>
           )}
           {item.un_number && (
-            <span className="rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[11px] text-violet-700 font-mono">
+            <span className="rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-xs text-violet-700 font-mono">
               {item.un_number}
             </span>
           )}
         </div>
       </div>
-      <p className="text-xs text-slate-500 line-clamp-1">
-        {item.name_en}{item.formula ? ` (${item.formula})` : ''} &middot; {item.hazard_class}
+      <p className="text-xs text-slate-600 line-clamp-2">
+        {item.name_en}{item.formula ? ` (${item.formula})` : ''}{item.hazard_class ? ` · ${item.hazard_class}` : ''}
       </p>
-      {item.appearance && (
-        <p className="text-xs text-slate-400 mt-0.5">{item.appearance}{item.odor ? ` · ${item.odor}` : ''}</p>
-      )}
-
-      {expanded && item.first_aid_summary && (
-        <div className="mt-3 rounded-xl bg-amber-50/60 border border-amber-100 p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
-          <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">응급처치 요약</p>
-          {[
-            { label: '흡입', icon: '💨', text: item.first_aid_summary.inhalation },
-            { label: '피부', icon: '🖐', text: item.first_aid_summary.skin },
-            { label: '눈', icon: '👁', text: item.first_aid_summary.eye },
-            { label: '섭취', icon: '🍽', text: item.first_aid_summary.ingestion },
-          ].map((fa) => (
-            <div key={fa.label}>
-              <p className="text-[11px] font-semibold text-slate-500 mb-0.5">{fa.icon} {fa.label}</p>
-              <p className="text-xs text-slate-700 leading-relaxed">{fa.text}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="flex items-center gap-2 mt-2">
-        <span className="text-[11px] text-slate-400">{expanded ? '접기' : '응급처치 보기'}</span>
-        <span className="text-[11px] text-slate-400">{expanded ? '▲' : '▼'}</span>
-        {onSpeak && (
-          <span
-            role="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              const fa = item.first_aid_summary;
-              onSpeak(`${item.name_ko}. 흡입 시: ${fa.inhalation}. 피부 접촉 시: ${fa.skin}. 눈 접촉 시: ${fa.eye}. 섭취 시: ${fa.ingestion}`);
-            }}
-            className="ml-auto text-[11px] text-blue-600 hover:text-blue-700"
-          >
-            🔊 읽기
-          </span>
-        )}
-      </div>
-    </button>
+      <AiDbLink cas={item.cas_number} name={item.name_ko} />
+    </div>
   );
 }
 
@@ -189,7 +142,7 @@ function AIEstimationCard({ item, index, onNameClick }: {
     <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-3 shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[11px] font-bold text-slate-500">
+          <span className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">
             {index + 1}
           </span>
           <button
@@ -201,29 +154,19 @@ function AIEstimationCard({ item, index, onNameClick }: {
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {item.cas_number && (
-            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-[11px] text-sky-700 font-mono hidden sm:inline">
+            <span className="rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-xs text-sky-700 font-mono hidden sm:inline">
               {item.cas_number}
             </span>
           )}
-          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${confidenceBadge(item.confidence)}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${confidenceBadge(item.confidence)}`}>
             {item.confidence}
           </span>
         </div>
       </div>
 
-      <p className="text-xs text-slate-500 leading-relaxed">{item.reasoning}</p>
+      <p className="text-xs text-slate-600 leading-relaxed">{item.reasoning}</p>
 
-      {item.immediate_actions.length > 0 && (
-        <div className="rounded-xl bg-amber-50/70 border border-amber-100 p-3 space-y-1.5">
-          <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">즉각 조치</p>
-          {item.immediate_actions.map((action, i) => (
-            <p key={i} className="text-xs text-slate-700 flex gap-2">
-              <span className="text-amber-500 shrink-0">&bull;</span>
-              {action}
-            </p>
-          ))}
-        </div>
-      )}
+      <AiDbLink cas={item.cas_number} name={item.chemical_name} />
     </div>
   );
 }
@@ -248,7 +191,7 @@ function GuideBullet({ text, sub }: { text: string; sub?: string }) {
       <span className="text-blue-500 shrink-0 mt-0.5 text-xs">&bull;</span>
       <div>
         <p className="text-xs text-slate-700 leading-relaxed">{text}</p>
-        {sub && <p className="text-[11px] text-slate-400 leading-relaxed mt-0.5">{sub}</p>}
+        {sub && <p className="text-xs text-slate-400 leading-relaxed mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -258,8 +201,8 @@ function FieldResponseGuide() {
   return (
     <div className="space-y-2">
       <div className="px-1 pb-1">
-        <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">화학물질 사고 현장대응 가이드</p>
-        <p className="text-[10px] text-slate-400 mt-0.5">물질명을 검색하거나, 아래 가이드를 참고하세요</p>
+        <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">화학물질 사고 현장대응 가이드</p>
+        <p className="text-xs text-slate-400 mt-0.5">물질명을 검색하거나, 아래 가이드를 참고하세요</p>
       </div>
 
       <GuideSection icon="🛡" title="1. 현장 접근 및 안전 확보">
@@ -280,7 +223,7 @@ function FieldResponseGuide() {
           ].map((ppe) => (
             <div key={ppe.level} className={`rounded-xl border p-2.5 ${ppe.color}`}>
               <p className="text-xs font-bold">Level {ppe.level}</p>
-              <p className="text-[10px] text-slate-500 leading-relaxed mt-1 whitespace-pre-line">{ppe.desc}</p>
+              <p className="text-xs text-slate-500 leading-relaxed mt-1 whitespace-pre-line">{ppe.desc}</p>
             </div>
           ))}
         </div>
@@ -387,7 +330,6 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
   const router = useRouter();
   const [results, setResults] = useState<SearchResult[]>([]);
   const [aiResults, setAiResults] = useState<AISearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiQuery, setAiQuery] = useState<string | null>(null);
   const [aiError, setAiError] = useState('');
@@ -445,6 +387,8 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
     if (timerRef.current) clearTimeout(timerRef.current);
     if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
     abortRef.current?.abort();
+    // 검색어가 바뀌면 이전 AI 결과를 즉시 비워야 다른 물질 결과가 남지 않는다(B 단계에서 검색 개편 시 정리)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAiResults([]);
     setAiQuery(null);
     setAiError('');
@@ -452,18 +396,10 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
     const q = query.trim();
     if (!q) { setResults([]); return; }
 
-    timerRef.current = setTimeout(async () => {
-      setLoading(true);
-      let local: SearchResult[] = [];
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-        if (res.ok) {
-          const data = await res.json();
-          local = ((data.results ?? []) as Chemical[]).map(toSearchResult);
-        }
-      } catch { /* 오프라인 등 */ }
+    // 검증 데이터 검색은 브라우저에서 바로 한다 — 오프라인에서도 동작해야 하므로 서버를 거치지 않는다
+    timerRef.current = setTimeout(() => {
+      const local = q.length >= 2 ? searchChemicals(q).map(toSearchResult) : [];
       setResults(local);
-      setLoading(false);
       if (local.length === 0 && q.length >= 2) {
         aiTimerRef.current = setTimeout(() => runAi(q), 500);
       }
@@ -514,20 +450,19 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
         )}
       </div>
       <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pb-2">
-        {loading && <><SkeletonCard /><SkeletonCard /><SkeletonCard /></>}
 
-        {!loading && !aiLoading && !query.trim() && <FieldResponseGuide />}
+        {!aiLoading && !query.trim() && <FieldResponseGuide />}
 
-        {!loading && results.length > 0 && (
+        {results.length > 0 && (
           <>
-            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider px-1">검증 데이터</p>
+            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider px-1">검증 데이터</p>
             {results.map((r) => (
               <SearchResultCard key={r.id} result={r} onClick={() => router.push(`/chemical/${r.id}`)} />
             ))}
           </>
         )}
 
-        {!loading && !aiLoading && query.trim().length >= 2 && results.length > 0 && aiQuery !== query.trim() && (
+        {!aiLoading && query.trim().length >= 2 && results.length > 0 && aiQuery !== query.trim() && (
           <button
             onClick={() => runAi(query.trim())}
             className="w-full rounded-2xl border border-dashed border-amber-300 bg-amber-50/50 px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-50"
@@ -553,12 +488,12 @@ function WindowA({ query, setQuery }: { query: string; setQuery: (q: string) => 
             <AiDisclaimer />
             {aiLoading && aiResults.length === 0 && <><SkeletonCard /><SkeletonCard /></>}
             {aiResults.map((item, i) => (
-              <AISearchResultCard key={`${item.cas_number}-${i}`} item={item} onSpeak={voice.speak} />
+              <AISearchResultCard key={`${item.cas_number}-${i}`} item={item} />
             ))}
           </>
         )}
 
-        {!loading && !aiLoading && query.trim() && results.length === 0 && aiResults.length === 0 && (
+        {!aiLoading && query.trim() && results.length === 0 && aiResults.length === 0 && (
           <EmptyState icon="&#128270;" text="검색 결과가 없습니다" />
         )}
       </div>
@@ -744,7 +679,7 @@ export default function Home() {
               <span className="text-base">{icon}</span>
               <div className="text-left hidden sm:block">
                 <p className="font-semibold leading-tight">{label}</p>
-                <p className="text-[10px] opacity-70 leading-none mt-0.5">{sub}</p>
+                <p className="text-xs opacity-70 leading-none mt-0.5">{sub}</p>
               </div>
               <span className="sm:hidden font-semibold">{label}</span>
             </button>
@@ -767,8 +702,8 @@ export default function Home() {
 
       {/* 푸터 */}
       <footer className="shrink-0 border-t border-slate-200 py-4 px-4 space-y-0.5 bg-white">
-        <p className="text-center text-[11px] text-slate-400 tracking-wide">대한화학손상연구회</p>
-        <p className="text-center text-[10px] text-slate-300">만든이 정회원 정기홍</p>
+        <p className="text-center text-xs text-slate-400 tracking-wide">대한화학손상연구회</p>
+        <p className="text-center text-xs text-slate-300">만든이 정회원 정기홍</p>
       </footer>
 
     </div>

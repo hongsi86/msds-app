@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import type { Chemical, RoleType } from '@/lib/types';
 import { getChemicalById } from '@/lib/chemicals-data';
 import { SiteConditionsBar } from '@/components/site-conditions-bar';
@@ -266,11 +266,11 @@ function PhysicalPropertiesCard({ props: p }: { props: NonNullable<Chemical['phy
   if (items.length === 0) return null;
   return (
     <div className="rounded-lg bg-white border border-slate-200 p-3 mb-4 shadow-sm">
-      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">물리화학적 특성</p>
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">물리화학적 특성</p>
       <div className="grid grid-cols-2 gap-2">
         {items.map((item, i) => (
           <div key={i} className={item.highlight ? 'rounded bg-rose-50 border border-rose-200 px-2 py-1.5' : 'px-2 py-1.5'}>
-            <p className="text-[10px] text-slate-400 leading-tight">{item.label}</p>
+            <p className="text-xs text-slate-400 leading-tight">{item.label}</p>
             <p className={`text-sm font-medium ${item.highlight ? 'text-rose-700' : 'text-slate-700'}`}>{item.value}</p>
           </div>
         ))}
@@ -285,7 +285,7 @@ function ToxicitySection({ tox }: { tox: NonNullable<Chemical['toxicity_data']> 
   if (!has) return null;
   return (
     <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
-      <p className="text-[11px] font-semibold text-blue-700 uppercase tracking-wider mb-2">정량 독성·노출 기준</p>
+      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2">정량 독성·노출 기준</p>
       <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
         {tox.ld50_oral_rat_mg_kg !== undefined && (
           <div><p className="text-slate-500">LD50 (경구·쥐)</p><p className="font-medium text-slate-800">{tox.ld50_oral_rat_mg_kg} mg/kg</p></div>
@@ -318,7 +318,7 @@ function ExternalMSDSCard({ chemical, onCopy }: { chemical: Chemical; onCopy: ()
   const open = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
   return (
     <div className="mt-6 rounded-xl bg-slate-50 border border-slate-200 p-4">
-      <p className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-2">정식 MSDS 외부 참조</p>
+      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">정식 MSDS 외부 참조</p>
       <p className="text-xs text-slate-500 mb-3 leading-relaxed">
         ChemGuard는 현장 대응 도구입니다. 법적 요구(취급·저장·폐기·성분%·환경 등 전체 16항목)는 아래 공식 출처를 확인하세요.
       </p>
@@ -360,13 +360,19 @@ function CSAPanel({ protocol }: { protocol: Chemical['csa_protocol'] }) {
   );
 }
 
-export default function ChemicalDetailPage() {
-  const params = useParams<{ id: string }>();
-  const searchParams = useSearchParams();
+// useSearchParams 를 쓰면 정적 HTML 이 통째로 클라이언트 렌더링으로 빠져
+// 오프라인에서 본문 없는 스피너만 남는다. 서버에선 null(기본 RES 탭)로 그린다.
+const noopSubscribe = () => () => {};
+const readRoleParam = () => new URLSearchParams(window.location.search).get('role');
+
+export function ChemicalDetail({ id }: { id: string }) {
   const router = useRouter();
-  const [chemical, setChemical] = useState<Chemical | null>(null);
-  const [activeRole, setActiveRole] = useState<RoleType>('RES');
-  const [notFound, setNotFound] = useState(false);
+  const chemical = getChemicalById(id);
+  // ?role=EMS 로 들어오면 그 탭부터, 사용자가 탭을 누르면 그 선택이 우선
+  const paramRole = useSyncExternalStore(noopSubscribe, readRoleParam, () => null) as RoleType | null;
+  const [pickedRole, setActiveRole] = useState<RoleType | null>(null);
+  const activeRole: RoleType =
+    pickedRole ?? (paramRole && ROLES.some((r) => r.key === paramRole) ? paramRole : 'RES');
   const [toast, setToast] = useState<string | null>(null);
   const [position, setPosition] = useState<GeoPoint | undefined>(undefined);
   const [weather, setWeather] = useState<WeatherSnapshot | undefined>(undefined);
@@ -391,21 +397,7 @@ export default function ChemicalDetailPage() {
     });
   };
 
-  useEffect(() => {
-    const found = getChemicalById(params.id);
-    if (found) {
-      setChemical(found);
-    } else {
-      setNotFound(true);
-    }
-  }, [params.id]);
-
-  useEffect(() => {
-    const role = searchParams.get('role') as RoleType | null;
-    if (role && ROLES.find((r) => r.key === role)) setActiveRole(role);
-  }, [searchParams]);
-
-  if (notFound) {
+  if (!chemical) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="text-center">
@@ -414,14 +406,6 @@ export default function ChemicalDetailPage() {
             검색으로 돌아가기
           </button>
         </div>
-      </div>
-    );
-  }
-
-  if (!chemical) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
       </div>
     );
   }
@@ -539,8 +523,8 @@ export default function ChemicalDetailPage() {
       )}
 
       <footer className="max-w-3xl mx-auto px-4 py-4 border-t border-slate-200">
-        <p className="text-center text-[11px] text-slate-400 tracking-wide">대한화학손상연구회</p>
-        <p className="text-center text-[10px] text-slate-300">만든이 정회원 정기홍</p>
+        <p className="text-center text-xs text-slate-400 tracking-wide">대한화학손상연구회</p>
+        <p className="text-center text-xs text-slate-300">만든이 정회원 정기홍</p>
       </footer>
     </div>
   );
