@@ -104,13 +104,11 @@ export function OfflineIndicator() {
 
   if (!offline) return null;
 
+  // 탭바 바로 위 한 줄. 색만이 아니라 글자로도 상태를 알린다
   return (
-    // 상단에 두면 뒤로가기·구역 표시를 가려서 하단 작은 알림으로 둔다(터치는 통과)
-    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-[9999] flex justify-center px-4 safe-area-bottom">
-      <p className="rounded-full bg-amber-500/95 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">
-        📡 오프라인 — 저장된 물질 정보만 사용, AI·지도 배경 제한
-      </p>
-    </div>
+    <p role="status" className="bg-amber-600 px-4 py-1 text-center text-sm font-semibold text-white">
+      오프라인 — 저장된 물질 정보만 사용 · AI·지도 배경 제한
+    </p>
   );
 }
 
@@ -160,7 +158,7 @@ export function InstallPrompt() {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-[9999] max-w-md mx-auto rounded-2xl bg-white border border-slate-300 p-4 shadow-xl safe-area-bottom">
+    <div className="fixed left-4 right-4 z-[9999] max-w-md mx-auto rounded-2xl bg-white border border-slate-300 p-4 shadow-xl" style={{ bottom: 'calc(var(--tabbar-h) + 0.75rem)' }}>
       <p className="text-base font-semibold text-slate-900 mb-1">앱으로 설치</p>
       {show === 'ios' ? (
         <p className="text-sm text-slate-700 mb-3">

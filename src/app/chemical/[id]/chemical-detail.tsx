@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Chemical, RoleType } from '@/lib/types';
@@ -9,14 +9,26 @@ import { SiteConditionsBar } from '@/components/site-conditions-bar';
 import { RadioCard } from '@/components/radio-card';
 import { HospitalNotifyCard } from '@/components/hospital-notify-card';
 import type { GeoPoint, WeatherSnapshot } from '@/lib/weather';
+import { CoreCard } from '@/components/core-card';
+import { DisplayControls } from '@/components/display-controls';
+import { pushRecent } from '@/lib/recent';
 
-const ROLES: { key: RoleType; label: string; color: string; activeColor: string }[] = [
-  { key: 'RES', label: '🚒 RES 구조대원', color: 'text-red-700 border-red-300', activeColor: 'bg-red-50 border-red-300 text-red-700' },
-  { key: 'EMS', label: '🚑 EMS 구급대원', color: 'text-rose-700 border-rose-300', activeColor: 'bg-rose-50 border-rose-300 text-rose-700' },
-  { key: 'MED', label: '🏥 MED 의료진', color: 'text-blue-700 border-blue-300', activeColor: 'bg-blue-50 border-blue-300 text-blue-700' },
-  { key: 'DM', label: '🎖️ DM 재난관리자', color: 'text-amber-700 border-amber-300', activeColor: 'bg-amber-50 border-amber-300 text-amber-700' },
-  { key: 'CSA', label: '🔬 CSA 화학물질안전원', color: 'text-violet-700 border-violet-300', activeColor: 'bg-violet-50 border-violet-300 text-violet-700' },
+// 짧은 이름으로 5등분 — 가로 스크롤 없이 한 번에 보이게
+const ROLES: { key: RoleType; short: string; label: string }[] = [
+  { key: 'RES', short: '구조', label: '구조대원 (RES)' },
+  { key: 'EMS', short: '구급', label: '구급대원 (EMS)' },
+  { key: 'MED', short: '의료', label: '의료진 (MED)' },
+  { key: 'DM', short: '재난', label: '재난관리자 (DM)' },
+  { key: 'CSA', short: '안전원', label: '화학물질안전원 (CSA)' },
 ];
+const ROLE_KEY = 'cg_role';
+const readStoredRole = () => {
+  try {
+    return localStorage.getItem(ROLE_KEY);
+  } catch {
+    return null;
+  }
+};
 
 const DANGER_COLORS: Record<number, string> = {
   4: 'bg-rose-600 text-white',
@@ -29,11 +41,11 @@ function Section({ title, items }: { title: string; items: string[] }) {
   if (!items?.length) return null;
   return (
     <div className="mb-4">
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{title}</p>
-      <ul className="space-y-1">
+      <h3 className="text-sm font-bold text-slate-600 mb-1.5">{title}</h3>
+      <ul className="space-y-1.5">
         {items.map((item, i) => (
-          <li key={i} className="text-sm text-slate-700 flex gap-2">
-            <span className="text-slate-400 shrink-0">•</span>
+          <li key={i} className="text-base text-slate-800 flex gap-2">
+            <span className="text-slate-500 shrink-0">•</span>
             <span>{item}</span>
           </li>
         ))}
@@ -45,13 +57,13 @@ function Section({ title, items }: { title: string; items: string[] }) {
 // 학회 전문가 감수 체계(Phase 2)가 들어오면 섹션별 감수 배지로 대체한다
 function ReviewPendingBanner() {
   return (
-    <div className="mb-4 rounded-lg border-2 border-amber-300 bg-amber-50 p-3">
-      <p className="text-sm font-bold text-amber-800">⚠ 학회 전문가 검토 전 내용</p>
-      <p className="mt-1 text-xs leading-relaxed text-amber-900">
+    <details className="mb-4 rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-2">
+      <summary className="cursor-pointer text-base font-bold text-amber-900">학회 감수 전 — 투약은 의료지도 하에서만</summary>
+      <p className="mt-1 text-sm leading-relaxed text-amber-900">
         약물·용량은 대한화학손상연구회 감수가 끝나지 않았습니다. 구급대원 업무범위 밖 투약은 의료지도 하에서만 하고,
         병원에서는 독성학 자문으로 반드시 확인하십시오.
       </p>
-    </div>
+    </details>
   );
 }
 
@@ -70,85 +82,9 @@ function RESPanel({ protocol }: { protocol: Chemical['res_protocol'] }) {
   const summary = protocol.erg_action_summary;
   return (
     <div className="space-y-4">
-      {/* 이격거리표 (정량) — ERG2024 표1 등재 물질 우선 표시 */}
-      {dist && (
-        <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">📐 이격거리 (ERG2024 표1)</p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
-              <p className="font-semibold text-slate-600 mb-1">소량 누출 (≤208L)</p>
-              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.small_spill}m</span></p>
-              <p className="text-slate-500 mt-1">방호 낮 {dist.protective_action_km.small_day}km</p>
-              <p className="text-slate-500">방호 밤 {dist.protective_action_km.small_night}km</p>
-            </div>
-            <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-              <p className="font-semibold text-red-700 mb-1">대량 누출 (&gt;208L)</p>
-              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.large_spill}m</span></p>
-              <p className="text-red-600 mt-1">방호 낮 {dist.protective_action_km.large_day}km</p>
-              <p className="text-red-700 font-semibold">방호 밤 {dist.protective_action_km.large_night}km</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ERG 정성 안내 (표1 미등재 물질의 주황색 지침 권고) */}
-      {!dist && summary && (
-        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-          <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1">📐 초기 격리·방호 거리</p>
-          <p className="text-sm text-slate-800">{summary}</p>
-        </div>
-      )}
-
-      {/* PPE + ERG 지침 */}
-      <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500">PPE</span>
-          <span className="text-2xl font-bold text-red-700">레벨 {protocol.ppe_level}</span>
-        </div>
-        {protocol.erg_guide_number && (
-          <div className="text-right">
-            <p className="text-xs text-slate-500">ERG 지침</p>
-            <p className="text-sm font-mono font-bold text-red-700">{protocol.erg_guide_number}</p>
-          </div>
-        )}
-      </div>
-
-      {/* 물 반응성 경고 배너 */}
-      {protocol.water_reactive && (
-        <div className="rounded-lg bg-amber-50 border-2 border-amber-300 p-3">
-          <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">💧 물 반응성 주의</p>
-          {protocol.water_reaction_note && (
-            <p className="text-sm text-amber-900">{protocol.water_reaction_note}</p>
-          )}
-        </div>
-      )}
-
-      <Section title="🧭 현장 접근 원칙" items={protocol.scene_approach} />
-      <Section title="🧯 화재 진압 전술" items={protocol.fire_tactics} />
-      <Section title="🚰 누출 통제" items={protocol.leak_control} />
-
-      <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">🚿 권장 제독</p>
-        <p className="text-sm text-slate-700">{protocol.decon_recommendation}</p>
-      </div>
-
-      {/* BLEVE */}
-      {protocol.bleve_risk && (
-        <div className="rounded-lg bg-orange-50 border-2 border-orange-300 p-3">
-          <p className="text-xs font-bold text-orange-800 uppercase tracking-wider mb-1">💥 BLEVE 위험</p>
-          {protocol.bleve_evacuation_m && (
-            <p className="text-sm text-orange-900">
-              가연성 액화가스 탱크 화재 시 권장 대피거리 <span className="font-bold">{protocol.bleve_evacuation_m}m 이상</span>
-            </p>
-          )}
-        </div>
-      )}
-
-      <Section title="📞 수보 시 전달 정보" items={protocol.resource_request} />
-
       {protocol.absolute_prohibitions.length > 0 && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-          <p className="text-xs font-semibold text-red-700 uppercase tracking-wider mb-2">⛔ 절대 금지</p>
+          <p className="text-xs font-semibold text-red-700 mb-2">절대 금지 (전체)</p>
           <ul className="space-y-1">
             {protocol.absolute_prohibitions.map((item, i) => (
               <li key={i} className="text-sm text-red-700 flex gap-2">
@@ -159,6 +95,68 @@ function RESPanel({ protocol }: { protocol: Chemical['res_protocol'] }) {
           </ul>
         </div>
       )}
+      {/* 이격거리표 (정량) — ERG2024 표1 등재 물질 우선 표시 */}
+      {dist && (
+        <div>
+          <p className="text-xs font-semibold text-slate-500 mb-2">이격거리 (ERG2024 표1)</p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
+              <p className="font-semibold text-slate-600 mb-1">소량 누출 (≤208L)</p>
+              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.small_spill}m</span></p>
+              <p className="text-slate-500 mt-1">방호 낮 {dist.protective_action_km.small_day}km</p>
+              <p className="text-slate-500">방호 밤 {dist.protective_action_km.small_night}km</p>
+            </div>
+            <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+              <p className="font-semibold text-red-700 mb-1">대량 누출 (&gt;208L)</p>
+              <p className="text-slate-700">초기격리 <span className="font-bold">{dist.initial_isolation_m.large_spill}m</span></p>
+              <p className="text-red-700 mt-1">방호 낮 {dist.protective_action_km.large_day}km</p>
+              <p className="text-red-700 font-semibold">방호 밤 {dist.protective_action_km.large_night}km</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ERG 정성 안내 (표1 미등재 물질의 주황색 지침 권고) */}
+      {!dist && summary && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+          <p className="text-xs font-semibold text-amber-700 mb-1">초기 격리·방호 거리</p>
+          <p className="text-sm text-slate-800">{summary}</p>
+        </div>
+      )}
+
+      {/* 물 반응성 경고 배너 */}
+      {protocol.water_reactive && (
+        <div className="rounded-lg bg-amber-50 border-2 border-amber-300 p-3">
+          <p className="text-xs font-bold text-amber-800 mb-1">물 반응성 주의</p>
+          {protocol.water_reaction_note && (
+            <p className="text-sm text-amber-900">{protocol.water_reaction_note}</p>
+          )}
+        </div>
+      )}
+
+      <Section title="현장 접근 원칙" items={protocol.scene_approach} />
+      <Section title="화재 진압 전술" items={protocol.fire_tactics} />
+      <Section title="누출 통제" items={protocol.leak_control} />
+
+      <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
+        <p className="text-xs font-semibold text-slate-500 mb-1">권장 제독</p>
+        <p className="text-sm text-slate-700">{protocol.decon_recommendation}</p>
+      </div>
+
+      {/* BLEVE */}
+      {protocol.bleve_risk && (
+        <div className="rounded-lg bg-orange-50 border-2 border-orange-300 p-3">
+          <p className="text-xs font-bold text-orange-800 mb-1">BLEVE 위험</p>
+          {protocol.bleve_evacuation_m && (
+            <p className="text-sm text-orange-900">
+              가연성 액화가스 탱크 화재 시 권장 대피거리 <span className="font-bold">{protocol.bleve_evacuation_m}m 이상</span>
+            </p>
+          )}
+        </div>
+      )}
+
+      <Section title="수보 시 전달 정보" items={protocol.resource_request} />
+
     </div>
   );
 }
@@ -166,6 +164,19 @@ function RESPanel({ protocol }: { protocol: Chemical['res_protocol'] }) {
 function EMSPanel({ protocol }: { protocol: Chemical['ems_protocol'] }) {
   return (
     <div className="space-y-4">
+      {protocol.absolute_prohibitions.length > 0 && (
+        <div className="rounded-lg bg-rose-50 border border-rose-200 p-3">
+          <p className="text-xs font-semibold text-rose-700 mb-2">절대 금지</p>
+          <ul className="space-y-1">
+            {protocol.absolute_prohibitions.map((item, i) => (
+              <li key={i} className="text-sm text-rose-700 flex gap-2">
+                <span className="shrink-0">✕</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="flex items-center gap-3 p-3 rounded-lg bg-rose-50 border border-rose-200">
         <span className="text-xs text-slate-500">PPE 등급</span>
         <span className="text-2xl font-bold text-rose-700">{protocol.ppe_level}</span>
@@ -174,7 +185,7 @@ function EMSPanel({ protocol }: { protocol: Chemical['ems_protocol'] }) {
       <Section title="자기보호" items={protocol.self_protection} />
 
       <div>
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">노출경로별 처치</p>
+        <p className="text-xs font-semibold text-slate-500 mb-2">노출경로별 처치</p>
         <RouteCard label="흡입" text={protocol.route_treatments.inhalation} />
         <RouteCard label="피부" text={protocol.route_treatments.skin} />
         <RouteCard label="눈" text={protocol.route_treatments.eye} />
@@ -183,7 +194,7 @@ function EMSPanel({ protocol }: { protocol: Chemical['ems_protocol'] }) {
 
       {protocol.field_medications.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">현장 투약</p>
+          <p className="text-xs font-semibold text-slate-500 mb-2">현장 투약</p>
           {protocol.field_medications.map((med, i) => (
             <div key={i} className="rounded-lg bg-slate-50 border border-slate-100 p-3 mb-2">
               <p className="text-sm font-medium text-slate-800">{med.name}</p>
@@ -196,19 +207,6 @@ function EMSPanel({ protocol }: { protocol: Chemical['ems_protocol'] }) {
 
       <Section title="이송 판단 기준" items={protocol.transport_criteria} />
 
-      {protocol.absolute_prohibitions.length > 0 && (
-        <div className="rounded-lg bg-rose-50 border border-rose-200 p-3">
-          <p className="text-xs font-semibold text-rose-700 uppercase tracking-wider mb-2">🚫 절대 금지</p>
-          <ul className="space-y-1">
-            {protocol.absolute_prohibitions.map((item, i) => (
-              <li key={i} className="text-sm text-rose-700 flex gap-2">
-                <span className="shrink-0">✕</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }
@@ -222,7 +220,7 @@ function MEDPanel({ chemical }: { chemical: Chemical }) {
       <Section title="필수 검사" items={protocol.lab_tests} />
       {protocol.antidotes.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">해독제·치료약</p>
+          <p className="text-xs font-semibold text-slate-500 mb-2">해독제·치료약</p>
           {protocol.antidotes.map((med, i) => (
             <div key={i} className="rounded-lg bg-slate-50 border border-slate-100 p-3 mb-2">
               <p className="text-sm font-medium text-slate-800">{med.name}</p>
@@ -266,7 +264,7 @@ function PhysicalPropertiesCard({ props: p }: { props: NonNullable<Chemical['phy
   if (items.length === 0) return null;
   return (
     <div className="rounded-lg bg-white border border-slate-200 p-3 mb-4 shadow-sm">
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">물리화학적 특성</p>
+      <p className="text-xs font-semibold text-slate-500 mb-2">물리화학적 특성</p>
       <div className="grid grid-cols-2 gap-2">
         {items.map((item, i) => (
           <div key={i} className={item.highlight ? 'rounded bg-rose-50 border border-rose-200 px-2 py-1.5' : 'px-2 py-1.5'}>
@@ -285,7 +283,7 @@ function ToxicitySection({ tox }: { tox: NonNullable<Chemical['toxicity_data']> 
   if (!has) return null;
   return (
     <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
-      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2">정량 독성·노출 기준</p>
+      <p className="text-xs font-semibold text-blue-700 mb-2">정량 독성·노출 기준</p>
       <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
         {tox.ld50_oral_rat_mg_kg !== undefined && (
           <div><p className="text-slate-500">LD50 (경구·쥐)</p><p className="font-medium text-slate-800">{tox.ld50_oral_rat_mg_kg} mg/kg</p></div>
@@ -318,7 +316,7 @@ function ExternalMSDSCard({ chemical, onCopy }: { chemical: Chemical; onCopy: ()
   const open = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
   return (
     <div className="mt-6 rounded-xl bg-slate-50 border border-slate-200 p-4">
-      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">정식 MSDS 외부 참조</p>
+      <p className="text-xs font-semibold text-slate-600 mb-2">정식 MSDS 외부 참조</p>
       <p className="text-xs text-slate-500 mb-3 leading-relaxed">
         ChemGuard는 현장 대응 도구입니다. 법적 요구(취급·저장·폐기·성분%·환경 등 전체 16항목)는 아래 공식 출처를 확인하세요.
       </p>
@@ -370,16 +368,30 @@ export function ChemicalDetail({ id }: { id: string }) {
   const chemical = getChemicalById(id);
   // ?role=EMS 로 들어오면 그 탭부터, 사용자가 탭을 누르면 그 선택이 우선
   const paramRole = useSyncExternalStore(noopSubscribe, readRoleParam, () => null) as RoleType | null;
-  const [pickedRole, setActiveRole] = useState<RoleType | null>(null);
-  const activeRole: RoleType =
-    pickedRole ?? (paramRole && ROLES.some((r) => r.key === paramRole) ? paramRole : 'RES');
+  // 마지막에 고른 직군을 기억해 매번 다시 누르지 않게 한다(링크의 ?role= 이 우선)
+  const storedRole = useSyncExternalStore(noopSubscribe, readStoredRole, () => null) as RoleType | null;
+  const [pickedRole, setPickedRole] = useState<RoleType | null>(null);
+  const valid = (r: RoleType | null) => (r && ROLES.some((x) => x.key === r) ? r : null);
+  const activeRole: RoleType = pickedRole ?? valid(paramRole) ?? valid(storedRole) ?? 'RES';
+  const setActiveRole = (r: RoleType) => {
+    setPickedRole(r);
+    try {
+      localStorage.setItem(ROLE_KEY, r);
+    } catch {
+      /* 무시 */
+    }
+  };
+
+  useEffect(() => {
+    pushRecent(id);
+  }, [id]);
   const [toast, setToast] = useState<string | null>(null);
   const [position, setPosition] = useState<GeoPoint | undefined>(undefined);
   const [weather, setWeather] = useState<WeatherSnapshot | undefined>(undefined);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 2000);
+    setTimeout(() => setToast(null), 4000);
   }, []);
 
   const handleSiteChange = useCallback(
@@ -402,7 +414,7 @@ export function ChemicalDetail({ id }: { id: string }) {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="text-center">
           <p className="text-slate-500 mb-4">물질 정보를 찾을 수 없습니다.</p>
-          <button onClick={() => router.push('/')} className="text-sm text-blue-600 underline">
+          <button onClick={() => router.push('/')} className="text-sm text-blue-700 underline">
             검색으로 돌아가기
           </button>
         </div>
@@ -415,81 +427,60 @@ export function ChemicalDetail({ id }: { id: string }) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       {/* 헤더 */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="text-slate-400 hover:text-slate-700 transition-colors text-lg">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white px-2 py-1.5">
+        <div className="mx-auto flex max-w-3xl items-center gap-2">
+          <button
+            onClick={() => router.push('/')}
+            aria-label="검색으로"
+            className="flex w-11 shrink-0 items-center justify-center rounded-lg text-2xl text-slate-700"
+          >
             ←
           </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-slate-900 truncate">{chemical.name_ko}</h1>
-            <p className="text-xs text-slate-400 truncate">{chemical.name_en} · {chemical.formula}</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-bold leading-tight text-slate-900">{chemical.name_ko}</h1>
+            <p className="truncate text-sm text-slate-500">
+              {chemical.name_en} · {chemical.formula}
+            </p>
           </div>
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${DANGER_COLORS[chemical.danger_level]}`}>
-            위험 {chemical.danger_level}등급
+          <span className={`shrink-0 rounded-md px-2 py-1 text-sm font-bold ${DANGER_COLORS[chemical.danger_level]}`}>
+            위험 {chemical.danger_level}
           </span>
+          <DisplayControls />
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-4 pb-16">
-        {/* 물질 기본 정보 */}
-        <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
-          {chemical.cas_number && (
-            <div className="rounded-lg bg-white border border-slate-200 p-3 shadow-sm">
-              <p className="text-xs text-slate-400">CAS</p>
-              <p className="font-mono text-slate-700">{chemical.cas_number}</p>
-            </div>
-          )}
-          {chemical.un_number && (
-            <div className="rounded-lg bg-white border border-slate-200 p-3 shadow-sm">
-              <p className="text-xs text-slate-400">UN</p>
-              <p className="font-mono text-slate-700">{chemical.un_number}</p>
-            </div>
-          )}
-          {chemical.appearance && (
-            <div className="rounded-lg bg-white border border-slate-200 p-3 col-span-2 shadow-sm">
-              <p className="text-xs text-slate-400">외관·냄새</p>
-              <p className="text-slate-700">{chemical.appearance}{chemical.odor ? ` / ${chemical.odor}` : ''}</p>
-            </div>
-          )}
-        </div>
+      <div className="mx-auto max-w-3xl space-y-4 px-3 py-3 pb-8">
+        <CoreCard chemical={chemical} />
 
-        {/* 현장 조건: GPS + 풍향 */}
-        <SiteConditionsBar onChange={handleSiteChange} />
-
-        {/* 물리화학적 특성 */}
-        {chemical.physical_properties && <PhysicalPropertiesCard props={chemical.physical_properties} />}
-
-        {/* 역할 탭 */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+        {/* 직군 탭: 5등분 */}
+        <div role="tablist" aria-label="직군" className="grid grid-cols-5 gap-1 rounded-xl border border-slate-300 bg-white p-1">
           {ROLES.map((role) => (
             <button
               key={role.key}
+              role="tab"
+              aria-selected={activeRole === role.key}
               onClick={() => setActiveRole(role.key)}
-              className={`shrink-0 text-sm font-medium px-4 py-3 rounded-lg border transition-all ${
-                activeRole === role.key
-                  ? role.activeColor
-                  : 'border-slate-200 text-slate-400 hover:text-slate-600 bg-white'
+              className={`rounded-lg text-base ${
+                activeRole === role.key ? 'bg-slate-900 font-bold text-white' : 'font-medium text-slate-600'
               }`}
             >
-              {role.label}
+              {role.short}
             </button>
           ))}
         </div>
 
         {/* 역할별 내용 */}
-        <div className="rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
-          <h2 className={`text-sm font-semibold mb-4 ${activeRoleMeta.color.split(' ')[0]}`}>
-            {activeRoleMeta.label} 대응 프로토콜
-          </h2>
+        <div role="tabpanel" className="rounded-xl border border-slate-300 bg-white p-4">
+          <h2 className="mb-4 text-base font-bold text-slate-900">{activeRoleMeta.label} 대응</h2>
           {activeRole === 'RES' && (
             <>
               <RESPanel protocol={chemical.res_protocol} />
               <div className="grid grid-cols-2 gap-2 mt-4">
-                <Link href={`/map?chem=${chemical.id}`} className="rounded-lg bg-teal-50 border border-teal-200 px-3 py-2.5 text-center text-sm font-semibold text-teal-700">
-                  🗺️ 지도에 이격거리
+                <Link href={`/map?chem=${chemical.id}`} className="flex min-h-12 items-center justify-center rounded-lg border-2 border-slate-900 text-base font-bold text-slate-900">
+                  지도에 이격거리
                 </Link>
-                <Link href={`/zone?chem=${chemical.id}`} className="rounded-lg bg-rose-50 border border-rose-200 px-3 py-2.5 text-center text-sm font-semibold text-rose-700">
-                  📷 카메라 Zone
+                <Link href={`/zone?chem=${chemical.id}`} className="flex min-h-12 items-center justify-center rounded-lg border-2 border-slate-900 text-base font-bold text-slate-900">
+                  카메라로 구역 보기
                 </Link>
               </div>
               <RadioCard chemical={chemical} position={position} weather={weather} onToast={showToast} />
@@ -512,19 +503,60 @@ export function ChemicalDetail({ id }: { id: string }) {
           {activeRole === 'CSA' && <CSAPanel protocol={chemical.csa_protocol} />}
         </div>
 
+        {/* 현장 조건: GPS + 풍향 (무전 문안·통보에 쓰임) */}
+        <SiteConditionsBar onChange={handleSiteChange} />
+
+        {/* 물질 정보는 접어 둔다 — 첫 화면은 진입 판단 정보가 차지한다 */}
+        <details className="rounded-xl border border-slate-300 bg-white">
+          <summary className="flex min-h-12 cursor-pointer items-center px-4 text-base font-bold text-slate-800">
+            물질 정보 — CAS·외관·물성
+          </summary>
+          <div className="space-y-3 px-4 pb-4">
+            <dl className="grid grid-cols-2 gap-2 text-base">
+              <div>
+                <dt className="text-sm text-slate-500">CAS</dt>
+                <dd className="font-mono text-slate-800">{chemical.cas_number}</dd>
+              </div>
+              {chemical.un_number && (
+                <div>
+                  <dt className="text-sm text-slate-500">UN</dt>
+                  <dd className="font-mono text-slate-800">{chemical.un_number}</dd>
+                </div>
+              )}
+              {chemical.appearance && (
+                <div className="col-span-2">
+                  <dt className="text-sm text-slate-500">외관·냄새</dt>
+                  <dd className="text-slate-800">
+                    {chemical.appearance}
+                    {chemical.odor ? ` / ${chemical.odor}` : ''}
+                  </dd>
+                </div>
+              )}
+              <div className="col-span-2">
+                <dt className="text-sm text-slate-500">분류</dt>
+                <dd className="text-slate-800">{chemical.hazard_class}</dd>
+              </div>
+            </dl>
+            {chemical.physical_properties && <PhysicalPropertiesCard props={chemical.physical_properties} />}
+          </div>
+        </details>
+
         {/* 외부 MSDS 참조 */}
         <ExternalMSDSCard chemical={chemical} onCopy={copyCas} />
       </div>
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50">
+        <div
+          role="status"
+          className="fixed left-1/2 top-16 z-50 -translate-x-1/2 rounded-lg bg-slate-900 px-4 py-2.5 text-base font-semibold text-white shadow-lg"
+        >
           {toast}
         </div>
       )}
 
       <footer className="max-w-3xl mx-auto px-4 py-4 border-t border-slate-200">
         <p className="text-center text-xs text-slate-400 tracking-wide">대한화학손상연구회</p>
-        <p className="text-center text-xs text-slate-300">만든이 정회원 정기홍</p>
+        <p className="text-center text-xs text-slate-500">만든이 정회원 정기홍</p>
       </footer>
     </div>
   );

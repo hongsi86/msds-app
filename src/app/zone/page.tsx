@@ -169,7 +169,7 @@ function DistanceMeasureBar({ onDistanceChange, viewHeight }: { onDistanceChange
           className="absolute -left-16 -translate-y-1/2 rounded-lg bg-white/85 backdrop-blur shadow-md px-2 py-1 pointer-events-none border border-slate-200"
           style={{ top: `${(barTop + barBottom) / 2 * 100}%` }}
         >
-          <p className="text-blue-600 text-xs font-bold whitespace-nowrap">{dist}m</p>
+          <p className="text-blue-700 text-xs font-bold whitespace-nowrap">{dist}m</p>
           <p className="text-xs text-slate-500 whitespace-nowrap">{refObj.icon} {refObj.heightCm}cm 기준</p>
         </div>
 
@@ -274,7 +274,7 @@ function ZoneContent() {
     : '#94a3b8';
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col">
+    <div className="fixed inset-x-0 top-0 bottom-[var(--tabbar-h)] bg-black flex flex-col">
       {/* 카메라 뷰 */}
       <div ref={cameraContainerRef} className="flex-1 relative overflow-hidden">
         <video
@@ -305,12 +305,12 @@ function ZoneContent() {
         {/* 상단: 뒤로가기 + 구역 표시 */}
         <div className="absolute top-0 left-0 right-0 z-10 safe-area-top">
           <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-            <button onClick={() => router.push(chemId ? `/chemical/${chemId}` : '/')} className="w-9 h-9 rounded-full bg-white/80 backdrop-blur shadow-md flex items-center justify-center text-slate-700 text-lg border border-white/50">
+            <button onClick={() => router.push(chemId ? `/chemical/${chemId}` : '/')} aria-label="뒤로" className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-slate-900 text-xl border-2 border-slate-900">
               ←
             </button>
             <div className="flex-1" />
             {meta && (
-              <div className="rounded-full px-4 py-1.5 backdrop-blur font-bold text-sm bg-white/80 shadow-md" style={{ color: meta.color, border: `2px solid ${meta.color}` }}>
+              <div className="rounded-full px-4 py-2 font-bold text-base text-white shadow-md" style={{ backgroundColor: meta.color }}>
                 {meta.short}
               </div>
             )}
@@ -319,19 +319,19 @@ function ZoneContent() {
 
         {/* 중앙: 구역 정보 */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 pointer-events-none px-4">
-          <p className="text-2xl font-black tracking-tight text-white drop-shadow-lg" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
+          <p className="rounded-lg bg-slate-900 px-3 py-1 font-placard text-4xl font-bold text-white tabular">
             {distance}m
           </p>
-          <div className="rounded-2xl px-4 py-2 bg-white/85 backdrop-blur-md shadow-lg border border-white/50 max-w-sm">
+          <div className="rounded-xl px-4 py-2.5 bg-white shadow-lg max-w-sm" style={{ border: `3px solid ${meta?.color ?? '#0f172a'}` }}>
             {meta ? (
-              <p className="text-sm font-bold text-center" style={{ color: meta.color }}>{meta.label}</p>
+              <p className="text-base font-bold text-center text-slate-900">{meta.label}</p>
             ) : (
               <p className="text-sm font-bold text-center text-slate-600">
                 거리 수치 없음 — ERG 지침 {chemical?.res_protocol.erg_guide_number ?? ''} 본문 확인
               </p>
             )}
             {!useCompass && zones?.protectiveM && (
-              <p className="text-xs text-rose-600 text-center mt-1 font-semibold">나침반 꺼짐 — 풍하에 있다고 가정해 판정</p>
+              <p className="text-sm text-rose-700 text-center mt-1 font-semibold">나침반 꺼짐 — 풍하에 있다고 가정해 판정</p>
             )}
           </div>
         </div>
@@ -342,11 +342,11 @@ function ZoneContent() {
             <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `rotate(${-facingDir}deg)` }}>
               <div className="absolute" style={{ transform: `rotate(${windDir}deg)` }}>
                 <div className="flex flex-col items-center -mt-5">
-                  <span className="text-teal-600 text-lg leading-none">↓</span>
-                  <span className="text-xs text-teal-600 font-bold">풍</span>
+                  <span className="text-teal-700 text-lg leading-none">↓</span>
+                  <span className="text-xs text-teal-700 font-bold">풍</span>
                 </div>
               </div>
-              <span className="absolute -top-0.5 text-xs font-bold text-rose-600">N</span>
+              <span className="absolute -top-0.5 text-xs font-bold text-rose-700">N</span>
               <span className="absolute -bottom-0.5 text-xs font-bold text-slate-400">S</span>
               <span className="absolute -right-0.5 text-xs font-bold text-slate-400">E</span>
               <span className="absolute -left-0.5 text-xs font-bold text-slate-400">W</span>
@@ -396,7 +396,7 @@ function ZoneContent() {
           {/* 바람 방향 */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-xs text-slate-500 font-semibold">💨 바람 방향 (불어오는 쪽)</p>
+              <p className="text-sm text-slate-600 font-semibold">바람 방향 (불어오는 쪽)</p>
               <button
                 onClick={() => setUseCompass(!useCompass)}
                 className={`text-xs px-2 py-0.5 rounded-full ${useCompass ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' : 'bg-slate-100 text-slate-400 ring-1 ring-slate-200'}`}
@@ -404,18 +404,20 @@ function ZoneContent() {
                 {useCompass ? '🧭 나침반 ON' : '🧭 나침반'}
               </button>
             </div>
-            <div className="grid grid-cols-8 gap-1">
+            {/* 장갑 터치: 8칸 한 줄 대신 4×2 */}
+            <div className="grid grid-cols-4 gap-1.5">
               {WIND_DIRS.map(w => (
                 <button
                   key={w.label}
                   onClick={() => setWindDir(w.deg)}
-                  className={`rounded-lg py-2 text-center transition-all ${windDir === w.deg
-                    ? 'bg-teal-50 ring-1 ring-teal-300 text-teal-700'
-                    : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                  aria-pressed={windDir === w.deg}
+                  className={`min-h-14 rounded-lg text-center ${windDir === w.deg
+                    ? 'bg-slate-900 text-white font-bold'
+                    : 'bg-white border border-slate-300 text-slate-700'
                   }`}
                 >
-                  <p className="text-xs font-bold">{w.label}</p>
-                  <p className="text-xs">{w.labelKo}</p>
+                  <span className="block text-base font-bold">{w.labelKo}</span>
+                  <span className="block text-xs">{w.label}</span>
                 </button>
               ))}
             </div>

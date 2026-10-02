@@ -179,10 +179,10 @@ export function HospitalNotifyCard({ chemical, position, onToast }: Props) {
         <button onClick={copy} className="rounded bg-slate-800 text-white px-2 py-2 text-xs font-medium">
           복사
         </button>
-        <button onClick={shareNative} className="rounded bg-yellow-500 text-slate-900 px-2 py-2 text-xs font-medium">
+        <button onClick={shareNative} className="rounded-lg bg-caution text-caution-ink px-2 text-sm font-semibold">
           공유(카톡)
         </button>
-        <button onClick={sendSms} className="rounded bg-emerald-600 text-white px-2 py-2 text-xs font-medium">
+        <button onClick={sendSms} className="rounded-lg bg-slate-900 text-white px-2 text-sm font-semibold">
           SMS
         </button>
       </div>

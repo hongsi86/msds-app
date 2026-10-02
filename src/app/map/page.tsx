@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 const MapComponent = dynamic(() => import('./MapComponent'), {
   ssr: false,
   loading: () => (
-    <div className="fixed inset-0 bg-slate-50 flex items-center justify-center">
+    <div className="fixed inset-x-0 top-0 bottom-[var(--tabbar-h)] bg-slate-50 flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <span className="text-4xl">🗺️</span>
         <span className="text-slate-400 text-sm">지도 로딩 중...</span>

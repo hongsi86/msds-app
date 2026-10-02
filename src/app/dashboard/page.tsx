@@ -221,37 +221,40 @@ function DashboardContent() {
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col">
       {/* Header */}
       <header className="shrink-0 sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 text-sm">←</button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold text-slate-900 truncate">{incident.title}</h1>
-              <span className={`shrink-0 rounded-full ring-1 px-2 py-0.5 text-xs font-semibold ${SEVERITY_COLORS[incident.severity]}`}>
-                {SEVERITY_LABELS[incident.severity]}
-              </span>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                incident.status === 'active' ? 'bg-rose-50 text-rose-600' :
-                incident.status === 'contained' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
-              }`}>
-                {STATUS_LABELS[incident.status]}
-              </span>
-            </div>
-            <p className="text-xs text-slate-400">{incident.chemical_name} · 경과 {elapsed}</p>
+        {/* 1행: 사고 이름이 잘리지 않게 한 줄을 통째로 쓴다. 2행: 상태·경과·행동 */}
+        <div className="max-w-6xl mx-auto px-2 pt-1.5 flex items-center gap-1">
+          <button onClick={() => router.push('/')} aria-label="검색으로" className="w-11 shrink-0 rounded-lg flex items-center justify-center text-2xl text-slate-700">←</button>
+          <h1 className="flex-1 min-w-0 truncate text-lg font-bold text-slate-900">{incident.title}</h1>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 pb-2 flex flex-wrap items-center gap-2">
+          <span className={`shrink-0 rounded-full ring-1 px-2.5 py-1 text-sm font-semibold ${SEVERITY_COLORS[incident.severity]}`}>
+            {SEVERITY_LABELS[incident.severity]}
+          </span>
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-sm font-semibold ${
+            incident.status === 'active' ? 'bg-rose-50 text-rose-700' :
+            incident.status === 'contained' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'
+          }`}>
+            {STATUS_LABELS[incident.status]}
+          </span>
+          <span className="text-sm text-slate-600">
+            {incident.chemical_name} · 경과 <span className="font-placard text-lg font-bold tabular text-slate-900">{elapsed}</span>
+          </span>
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={() => router.push('/dashboard/report-preview')}
+              className="shrink-0 rounded-lg bg-slate-900 text-white px-3 text-sm font-semibold"
+            >
+              보고서
+            </button>
+            <button
+              onClick={newIncident}
+              className={`shrink-0 rounded-lg border px-3 text-sm font-semibold ${
+                confirmNew ? 'bg-rose-600 border-rose-600 text-white' : 'bg-white border-slate-300 text-slate-700'
+              }`}
+            >
+              {confirmNew ? '지우고 새로? 한 번 더' : '새 사고'}
+            </button>
           </div>
-          <button
-            onClick={() => router.push('/dashboard/report-preview')}
-            className="shrink-0 rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs hover:bg-slate-700 transition-colors"
-          >
-            📄 보고서
-          </button>
-          <button
-            onClick={newIncident}
-            className={`shrink-0 min-h-10 rounded-lg border px-3 text-xs font-semibold transition-colors ${
-              confirmNew ? 'bg-rose-600 border-rose-600 text-white' : 'bg-slate-100 border-slate-200 text-slate-600'
-            }`}
-          >
-            {confirmNew ? '기록 지우고 새로? 한 번 더' : '+ 새 사고'}
-          </button>
         </div>
         {conflict && (
           <div className="max-w-6xl mx-auto px-4 pb-3 flex flex-wrap items-center gap-2 text-sm">
@@ -349,9 +352,9 @@ function DashboardContent() {
               <div key={field} className="flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-3 py-2 shadow-sm">
                 <span className="text-sm">{icon}</span>
                 <span className={`text-xs font-semibold flex-1 ${color}`}>{label}</span>
-                <button onClick={() => updateCasualties(field, -1)} className="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-200">−</button>
-                <span className="text-sm font-bold w-8 text-center text-slate-800">{incident[field]}</span>
-                <button onClick={() => updateCasualties(field, 1)} className="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-200">+</button>
+                <button onClick={() => updateCasualties(field, -1)} aria-label={`${label} 줄이기`} className="w-14 h-14 rounded-lg border border-slate-300 bg-white text-2xl font-bold text-slate-800">−</button>
+                <span className="w-10 text-center font-placard text-3xl font-bold tabular text-slate-900">{incident[field]}</span>
+                <button onClick={() => updateCasualties(field, 1)} aria-label={`${label} 늘리기`} className="w-14 h-14 rounded-lg border border-slate-300 bg-white text-2xl font-bold text-slate-800">+</button>
               </div>
             ))}
           </div>
@@ -399,9 +402,9 @@ function DashboardContent() {
                   key={st}
                   onClick={() => setIncident({ ...incident, status: st })}
                   className={`flex-1 rounded-lg py-2 text-xs font-bold ring-1 transition-all ${incident.status === st
-                    ? st === 'active' ? 'bg-rose-50 text-rose-600 ring-rose-200'
-                    : st === 'contained' ? 'bg-amber-50 text-amber-600 ring-amber-200'
-                    : 'bg-emerald-50 text-emerald-600 ring-emerald-200'
+                    ? st === 'active' ? 'bg-rose-50 text-rose-700 ring-rose-200'
+                    : st === 'contained' ? 'bg-amber-50 text-amber-700 ring-amber-200'
+                    : 'bg-emerald-50 text-emerald-700 ring-emerald-200'
                     : 'bg-white text-slate-400 ring-slate-200'}`}
                 >
                   {STATUS_LABELS[st]}
@@ -448,7 +451,7 @@ function DashboardContent() {
                 }`}
               >
                 <span className={`w-5 h-5 rounded-md border flex items-center justify-center text-xs shrink-0 ${
-                  item.completed ? 'bg-emerald-50 border-emerald-300 text-emerald-600' : 'border-slate-300'
+                  item.completed ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'border-slate-300'
                 }`}>
                   {item.completed ? '✓' : ''}
                 </span>

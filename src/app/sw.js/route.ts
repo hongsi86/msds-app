@@ -10,6 +10,7 @@ const VERSION = `${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'local'}-${
 const PAGES = [
   '/',
   '/offline',
+  '/guide',
   '/map',
   '/zone',
   '/vision',

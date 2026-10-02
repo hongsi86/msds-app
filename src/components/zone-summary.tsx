@@ -13,11 +13,11 @@ export function ZoneSummary({ zones, guide, summary }: { zones: ErgZones | null;
     <div className="space-y-1.5">
       <div className="grid grid-cols-2 gap-1.5">
         <div className="rounded-xl bg-rose-50 border border-rose-200 p-2 text-center">
-          <p className="text-xs text-rose-600 font-semibold">초기 이격 (전 방향)</p>
+          <p className="text-xs text-rose-700 font-semibold">초기 이격 (전 방향)</p>
           <p className="text-sm font-bold text-rose-700">{formatDistance(zones.isolationM)}</p>
         </div>
         <div className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-center">
-          <p className="text-xs text-amber-600 font-semibold">풍하 방호활동</p>
+          <p className="text-xs text-amber-700 font-semibold">풍하 방호활동</p>
           <p className="text-sm font-bold text-amber-700">{zones.protectiveM ? formatDistance(zones.protectiveM) : '표 없음'}</p>
         </div>
       </div>

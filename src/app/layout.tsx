@@ -1,16 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow_Condensed } from "next/font/google";
 import "./globals.css";
+import { DISPLAY_BOOT_SCRIPT } from "@/lib/display";
+import { TabBar } from "@/components/tab-bar";
 import { ServiceWorkerRegistration, OfflineIndicator, InstallPrompt } from "./pwa-components";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// 숫자·표지 글자 전용(라틴만, 수십 KB). 위험물 표지판의 좁고 굵은 글자와 같은 계열
+const barlow = Barlow_Condensed({
+  variable: "--font-barlow",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -29,6 +28,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#ffffff",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -37,11 +37,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${geistSans.variable} ${geistMono.variable}`}>
+    // data-theme·data-scale 은 첫 그림 전 스크립트가 붙이므로 서버 HTML 과 달라도 경고하지 않는다
+    <html lang="ko" className={barlow.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: DISPLAY_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         {children}
+        <TabBar offlineSlot={<OfflineIndicator />} />
         <ServiceWorkerRegistration />
-        <OfflineIndicator />
         <InstallPrompt />
       </body>
     </html>

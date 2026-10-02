@@ -236,7 +236,7 @@ export default function VisionPage() {
 
         {error && (
           <div className="rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3">
-            <p className="text-xs text-rose-600">{error}</p>
+            <p className="text-xs text-rose-700">{error}</p>
           </div>
         )}
 
@@ -253,7 +253,7 @@ export default function VisionPage() {
                     </span>
                     <button
                       onClick={() => router.push(`/?q=${encodeURIComponent(item.chemical_name)}`)}
-                      className="font-semibold text-slate-800 text-sm hover:text-blue-600 transition-colors text-left"
+                      className="font-semibold text-slate-800 text-sm hover:text-blue-700 transition-colors text-left"
                     >
                       {item.chemical_name}
                     </button>

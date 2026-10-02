@@ -59,8 +59,9 @@ export default function MapComponent() {
       zoomControl: false,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    // CARTO 기본 지도는 이제 API 키 없이는 "API KEY REQUIRED" 그림만 준다 → OSM 표준 타일(키 불필요)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19,
     }).addTo(map);
 
@@ -182,7 +183,7 @@ export default function MapComponent() {
       : null;
 
   return (
-    <div className="fixed inset-0 bg-slate-50 flex flex-col">
+    <div className="fixed inset-x-0 top-0 bottom-[var(--tabbar-h)] bg-slate-50 flex flex-col">
       {/* Map */}
       <div ref={mapContainerRef} className="flex-1 z-0" />
 
@@ -215,18 +216,19 @@ export default function MapComponent() {
 
           {/* Wind direction */}
           <div>
-            <p className="text-xs text-slate-500 font-semibold mb-1.5">💨 바람 방향 (불어오는 쪽)</p>
+            <p className="text-sm text-slate-600 font-semibold mb-1.5">바람 방향 (불어오는 쪽)</p>
             <div className="grid grid-cols-8 gap-1">
               {WIND_DIRS.map((w) => (
                 <button
                   key={w.label}
                   onClick={() => setWindDir(w.deg)}
-                  className={`rounded-lg py-1.5 text-center transition-all ${windDir === w.deg
-                    ? 'bg-teal-50 ring-1 ring-teal-300 text-teal-700'
-                    : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                  aria-pressed={windDir === w.deg}
+                  className={`min-h-12 rounded-lg text-center ${windDir === w.deg
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-white border border-slate-300 text-slate-700'
                   }`}
                 >
-                  <p className="text-xs font-bold">{w.label}</p>
+                  <p className="text-sm font-bold">{w.label}</p>
                 </button>
               ))}
             </div>

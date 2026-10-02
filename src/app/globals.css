@@ -1,43 +1,123 @@
 @import "tailwindcss";
+@import "./themes.css";
 
 :root {
-  --background: oklch(0.985 0.002 247);
-  --foreground: oklch(0.15 0.015 260);
+  --background: oklch(0.975 0.003 250);
+  --foreground: oklch(0.17 0.015 260);
+  --surface: #fff;
+  /* ERG 주황색 지침 페이지에서 따온 신호색. 위험(빨강)·주의(노랑)와 함께 이 앱의 신호색은 셋뿐이다 */
+  --erg: oklch(0.7 0.17 52);
+  --erg-ink: oklch(0.28 0.08 45);
+  --hazard: oklch(0.52 0.21 25);
+  --hazard-ink: #fff;
+  --caution: oklch(0.86 0.17 92);
+  --caution-ink: oklch(0.2 0.03 80);
+}
+
+:root[data-theme='night'] {
+  --erg: oklch(0.5 0.12 50);
+  --erg-ink: oklch(0.12 0.02 45);
+  --hazard: oklch(0.42 0.16 25);
+  --hazard-ink: oklch(0.92 0.02 45);
+  --caution: oklch(0.62 0.12 85);
+  --caution-ink: oklch(0.12 0.02 80);
+}
+
+:root[data-theme='contrast'] {
+  --erg: oklch(0.72 0.18 55);
+  --erg-ink: #000;
+  --hazard: oklch(0.45 0.2 27);
+  --caution: oklch(0.88 0.18 95);
+  --caution-ink: #000;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --color-surface: var(--surface);
+  --color-erg: var(--erg);
+  --color-erg-ink: var(--erg-ink);
+  --color-hazard: var(--hazard);
+  --color-hazard-ink: var(--hazard-ink);
+  --color-caution: var(--caution);
+  --color-caution-ink: var(--caution-ink);
+  /* 한글 본문은 기기 글꼴(오프라인에서도 항상 있음), 숫자·표지 글자는 위험물 표지판 계열의 좁은 고딕 */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --font-placard: var(--font-barlow), "Arial Narrow", var(--font-sans);
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* 역할별 색상 — 밝은 배경에서 선명하고 품격 있는 톤 */
-  --color-ems: oklch(0.52 0.20 18);
-  --color-med: oklch(0.48 0.20 260);
-  --color-dm: oklch(0.58 0.18 55);
-  --color-csa: oklch(0.48 0.22 300);
-
-  /* 위험도 */
-  --color-danger-4: oklch(0.40 0.18 25);
-  --color-danger-3: oklch(0.55 0.22 18);
-  --color-danger-2: oklch(0.62 0.18 55);
-  --color-danger-1: oklch(0.60 0.18 150);
+  /* 현장 가독성: 장갑 낀 채 1m 거리에서 읽히도록 기본 글자를 한 단계씩 키운다 */
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.35;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.45;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
 }
+
+/* 글자 크기 단계(A / A+ / A++) — rem 기준이라 화면 전체가 같이 커진다 */
+:root[data-scale='1'] { font-size: 112.5%; }
+:root[data-scale='2'] { font-size: 125%; }
+
+/* 하단 탭바 높이. 화면 전체를 쓰는 지도·Zone 은 이 값만큼 아래를 비운다 */
+:root { --tabbar-h: calc(4rem + env(safe-area-inset-bottom)); }
 
 body {
+  padding-bottom: var(--tabbar-h);
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
 }
 
-/* 슬라이더 스타일 */
+/* 장갑 터치: 버튼 최소 44px. 글줄 안의 작은 링크형 버튼은 .compact 로 뺀다 */
+button:not(.compact),
+[role='button']:not(.compact) {
+  min-height: 2.75rem;
+}
+
+:focus-visible {
+  outline: 3px solid var(--erg);
+  outline-offset: 2px;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* 야간: 흰 카드 면을 어두운 면으로(글자색 text-white 는 그대로 둬 색 버튼 글씨가 살아 있게) */
+:root[data-theme='night'] .bg-white,
+:root[data-theme='night'] [class*='bg-white/'] {
+  background-color: var(--surface);
+}
+/* 진한 회색 버튼은 뒤집으면 밝은 면 + 흰 글씨가 되므로 따로 잡는다 */
+:root[data-theme='night'] :is(.bg-slate-700, .bg-slate-800, .bg-slate-900) {
+  background-color: oklch(0.8 0.012 45);
+  color: oklch(0.15 0.012 45);
+}
+
+/* 고대비: 그림자·흐림·반투명 제거, 테두리 굵게 */
+:root[data-theme='contrast'] * {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+:root[data-theme='contrast'] [class*='border'] { border-width: 2px; }
+:root[data-theme='contrast'] [class*='bg-white/'] { background-color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* 슬라이더 */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: white;
-  border: 2px solid #475569;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  background: var(--surface);
+  border: 3px solid var(--color-slate-600);
   cursor: pointer;
 }
+
+/* 야간: 흰 바탕 로고 이미지가 눈부시지 않게 */
+:root[data-theme='night'] img { filter: brightness(0.75); }
