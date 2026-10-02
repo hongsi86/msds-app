@@ -76,52 +76,53 @@ export function SiteConditionsBar({ onChange }: Props) {
   return (
     <div className="rounded-lg bg-white border border-slate-200 p-3 mb-4 shadow-sm">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">현장 조건</p>
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">현장 조건</p>
         {phase !== 'ready' && phase !== 'manual' && (
           <button
             onClick={runAuto}
-            className="text-[11px] text-blue-700 hover:underline"
+            className="text-xs text-blue-700 hover:underline"
           >
             {phase === 'locating' ? '위치 확인 중…' : phase === 'fetching' ? '기상청 조회 중…' : '자동 측정'}
           </button>
         )}
         {(phase === 'ready' || phase === 'manual') && (
-          <button onClick={runAuto} className="text-[11px] text-slate-500 hover:text-slate-700">
+          <button onClick={runAuto} className="text-xs text-slate-500 hover:text-slate-700">
             새로고침
           </button>
         )}
       </div>
 
-      {weather && position && (
+      {/* 위치를 못 받아도(GPS 거부·음영지역) 수동 풍향은 보여야 한다 */}
+      {weather && (
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div>
-            <p className="text-[10px] text-slate-400 leading-tight">위치</p>
-            <p className="font-mono text-slate-700 text-[11px]">
-              {position.lat.toFixed(4)}, {position.lon.toFixed(4)}
+            <p className="text-xs text-slate-500 leading-tight">위치</p>
+            <p className="font-mono text-slate-700 text-xs">
+              {position ? `${position.lat.toFixed(4)}, ${position.lon.toFixed(4)}` : '미확인'}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 leading-tight">관측 시각</p>
-            <p className="font-mono text-slate-700 text-[11px]">{weather.observed_at}</p>
+            <p className="text-xs text-slate-500 leading-tight">관측 시각</p>
+            <p className="font-mono text-slate-700 text-xs">{formatObserved(weather.observed_at)}</p>
           </div>
           <div className="rounded bg-blue-50 border border-blue-100 px-2 py-1.5">
-            <p className="text-[10px] text-blue-700 leading-tight font-semibold">풍향</p>
+            <p className="text-xs text-blue-700 leading-tight font-semibold">풍향</p>
             <p className="text-sm font-bold text-blue-800">
               {degToCompass16(weather.wind_direction_deg)} ({weather.wind_direction_deg}°)
             </p>
           </div>
           <div className="rounded bg-emerald-50 border border-emerald-100 px-2 py-1.5">
-            <p className="text-[10px] text-emerald-700 leading-tight font-semibold">풍속</p>
+            <p className="text-xs text-emerald-700 leading-tight font-semibold">풍속</p>
             <p className="text-sm font-bold text-emerald-800">{weather.wind_speed_ms} m/s</p>
           </div>
           <div className="col-span-2 rounded bg-amber-50 border border-amber-100 px-2 py-1.5">
-            <p className="text-[10px] text-amber-700 leading-tight font-semibold">풍하 방향(대피·확산)</p>
+            <p className="text-xs text-amber-700 leading-tight font-semibold">풍하 방향(대피·확산)</p>
             <p className="text-sm font-bold text-amber-800">
               {degToCompass16(windDownwindDeg(weather.wind_direction_deg))} 측 (
               {windDownwindDeg(weather.wind_direction_deg)}°)
             </p>
           </div>
-          <p className="col-span-2 text-[10px] text-slate-400">
+          <p className="col-span-2 text-xs text-slate-400">
             출처: {weather.source === 'kma' ? '기상청 단기실황' : '수동 입력'}
           </p>
         </div>
@@ -141,13 +142,13 @@ export function SiteConditionsBar({ onChange }: Props) {
 
       {(phase === 'error' || phase === 'idle' || phase === 'manual') && (
         <div className="mt-3 border-t border-slate-100 pt-3 space-y-2">
-          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">수동 입력</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">수동 입력</p>
           <div className="grid grid-cols-4 gap-1">
             {COMPASS_OPTIONS.map((opt) => (
               <button
                 key={opt.deg}
                 onClick={() => setManual({ ...manual, windDir: opt.deg })}
-                className={`rounded px-2 py-1 text-[11px] font-medium border ${
+                className={`rounded px-2 py-1 text-xs font-medium border ${
                   manual.windDir === opt.deg
                     ? 'bg-blue-600 text-white border-blue-700'
                     : 'bg-white text-slate-600 border-slate-200'
@@ -158,7 +159,7 @@ export function SiteConditionsBar({ onChange }: Props) {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-[11px] text-slate-500 shrink-0">풍속</label>
+            <label className="text-xs text-slate-500 shrink-0">풍속</label>
             <input
               type="number"
               min={0}
@@ -168,7 +169,7 @@ export function SiteConditionsBar({ onChange }: Props) {
               onChange={(e) => setManual({ ...manual, windSpeed: Number(e.target.value) })}
               className="flex-1 rounded border border-slate-200 px-2 py-1 text-xs"
             />
-            <span className="text-[11px] text-slate-400">m/s</span>
+            <span className="text-xs text-slate-400">m/s</span>
             <button
               onClick={applyManual}
               className="rounded bg-slate-800 text-white px-3 py-1 text-xs font-medium"
@@ -180,4 +181,14 @@ export function SiteConditionsBar({ onChange }: Props) {
       )}
     </div>
   );
+}
+
+/** 기상청 "20261002 1400" 과 수동 입력 ISO 시각을 "10/02 14:00" 으로 */
+function formatObserved(v: string): string {
+  const m = v.match(/^(\d{4})(\d{2})(\d{2}) (\d{2})(\d{2})$/);
+  if (m) return `${m[2]}/${m[3]} ${m[4]}:${m[5]}`;
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return v;
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }

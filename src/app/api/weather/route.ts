@@ -10,13 +10,14 @@ interface KmaItem {
   baseTime: string;
 }
 
-function buildBaseDateTime(now: Date): { baseDate: string; baseTime: string } {
-  const d = new Date(now);
-  if (d.getMinutes() < 40) d.setHours(d.getHours() - 1);
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
+// 기상청 base_time 은 한국 시각 기준이다. Vercel 서버는 UTC 라 로컬 시각을 쓰면 9시간 어긋난다
+export function buildBaseDateTime(now: Date): { baseDate: string; baseTime: string } {
+  const d = new Date(now.getTime() + 9 * 3600_000);
+  if (d.getUTCMinutes() < 40) d.setUTCHours(d.getUTCHours() - 1);
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const hh = String(d.getUTCHours()).padStart(2, '0');
   return { baseDate: `${yyyy}${mm}${dd}`, baseTime: `${hh}00` };
 }
 
@@ -24,15 +25,16 @@ export async function GET(req: NextRequest) {
   const apiKey = process.env.KMA_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: 'KMA_API_KEY가 설정되지 않았습니다. .env.local에 키를 추가하세요.' },
+      { error: '기상 자동 조회를 쓸 수 없습니다. 풍향을 직접 입력하세요.' },
       { status: 503 }
     );
   }
 
   const lat = Number(req.nextUrl.searchParams.get('lat'));
   const lon = Number(req.nextUrl.searchParams.get('lon'));
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-    return NextResponse.json({ error: 'lat, lon 쿼리 파라미터가 필요합니다.' }, { status: 400 });
+  // 기상청 격자는 한반도 주변만 유효하다 — 범위 밖 요청으로 일일 할당량을 쓰지 않게 막는다
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < 32 || lat > 39.5 || lon < 123 || lon > 132.5) {
+    return NextResponse.json({ error: '국내 좌표만 조회할 수 있습니다.' }, { status: 400 });
   }
 
   const { x, y } = toKmaGrid({ lat, lon });
@@ -52,7 +54,8 @@ export async function GET(req: NextRequest) {
   try {
     resp = await fetch(url.toString(), { cache: 'no-store' });
   } catch (e) {
-    return NextResponse.json({ error: `기상청 API 호출 실패: ${(e as Error).message}` }, { status: 502 });
+    console.error('[weather] KMA fetch failed', e);
+    return NextResponse.json({ error: '기상청 연결 실패 — 풍향을 직접 입력하세요.' }, { status: 502 });
   }
   if (!resp.ok) {
     return NextResponse.json({ error: `기상청 응답 오류 ${resp.status}` }, { status: 502 });

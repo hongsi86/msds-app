@@ -245,6 +245,8 @@ function ZoneContent() {
     return () => window.removeEventListener('deviceorientation', handler, true);
   }, [useCompass]);
 
+  // 카메라(외부 장치)를 여는 정당한 effect — 상태 변경은 권한 응답 뒤 비동기로 일어난다
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { startCamera(); }, [startCamera]);
 
   useEffect(() => {

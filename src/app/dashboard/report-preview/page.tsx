@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   buildReportContext,
@@ -12,24 +12,25 @@ import {
   type ReportContext,
 } from '@/lib/incident-report';
 
+const noopSubscribe = () => () => {};
+
 export default function ReportPreviewPage() {
   const router = useRouter();
-  const [ctx, setCtx] = useState<ReportContext | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem('chemguard_incident') : null;
-    if (!raw) {
-      setError('상황판 데이터가 없습니다. 먼저 상황판에 기록을 입력하세요.');
-      return;
-    }
+  // 상황판 기록은 브라우저 저장소에만 있다. 서버 렌더에선 null, 브라우저에서 읽은 원문으로 보고서를 만든다
+  const raw = useSyncExternalStore(
+    noopSubscribe,
+    () => localStorage.getItem('chemguard_incident') ?? '',
+    () => null,
+  );
+  const { ctx, error } = useMemo((): { ctx: ReportContext | null; error: string | null } => {
+    if (raw === null) return { ctx: null, error: null };
+    if (!raw) return { ctx: null, error: '상황판 데이터가 없습니다. 먼저 상황판에 기록을 입력하세요.' };
     try {
-      const incident = JSON.parse(raw) as Incident;
-      setCtx(buildReportContext(incident));
+      return { ctx: buildReportContext(JSON.parse(raw) as Incident), error: null };
     } catch {
-      setError('상황판 데이터를 읽을 수 없습니다.');
+      return { ctx: null, error: '상황판 데이터를 읽을 수 없습니다.' };
     }
-  }, []);
+  }, [raw]);
 
   if (error) {
     return (

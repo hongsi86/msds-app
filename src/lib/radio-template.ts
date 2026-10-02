@@ -1,4 +1,5 @@
 import type { Chemical } from '@/lib/types';
+import { defaultDayNight, formatDistance, getErgZones } from '@/lib/erg';
 import { degToCompass16, windDownwindDeg, type GeoPoint, type WeatherSnapshot } from '@/lib/weather';
 
 export type RadioKind = 'initial' | 'update' | 'closing';
@@ -12,6 +13,8 @@ export interface IncidentContext {
   spillVolumeL?: number;
   patientsExposed?: number;
   patientsTransport?: number;
+  /** 사용자가 직접 확인 표시했을 때만 "통보 완료" 로 적는다 */
+  hospitalNotified?: boolean;
   resourceRequests?: string[];
   changedSince?: string;
   closingSummary?: string;
@@ -36,15 +39,15 @@ function windLine(ctx: IncidentContext): string {
 function ergLine(ctx: IncidentContext): string {
   const r = ctx.chemical.res_protocol;
   const guide = r.erg_guide_number ? `ERG${r.erg_guide_number}` : 'ERG 미지정';
-  const dist = r.erg_distance;
-  if (dist) {
-    const isolation =
-      ctx.spillVolumeL && ctx.spillVolumeL > 208
-        ? dist.initial_isolation_m.large_spill
-        : dist.initial_isolation_m.small_spill;
-    return `조치 — ${guide} 적용, 초기 격리 ${isolation}m. PPE ${r.ppe_level} 진입.`;
-  }
-  return `조치 — ${guide} 적용 (${r.erg_action_summary ?? '주황색 지침 확인 중'}). PPE ${r.ppe_level} 진입.`;
+  // 거리는 erg.ts 에서만 얻는다. 누출량을 모르면 대량 누출 기준(보수적)으로 적는다
+  const known = ctx.spillVolumeL !== undefined;
+  const spill = known && ctx.spillVolumeL! <= 208 ? 'small' : 'large';
+  const dayNight = defaultDayNight(ctx.reportedAt);
+  const z = getErgZones(ctx.chemical, { spill, dayNight });
+  if (!z) return `조치 — ${guide} 적용, 거리는 지침 본문 확인 중. PPE ${r.ppe_level} 진입.`;
+  const basis = `${spill === 'small' ? '소량' : '대량'}${known ? '' : '(누출량 미상)'}·${dayNight === 'day' ? '낮' : '밤'}`;
+  const protective = z.protectiveM ? `, 풍하 방호 ${formatDistance(z.protectiveM)}` : '';
+  return `조치 — ${guide} 적용, 초기 격리 ${formatDistance(z.isolationM)}${protective} (${basis}). PPE ${r.ppe_level} 진입.`;
 }
 
 function substanceLine(ctx: IncidentContext): string {
@@ -55,10 +58,12 @@ function substanceLine(ctx: IncidentContext): string {
 }
 
 function patientLine(ctx: IncidentContext): string {
-  const ex = ctx.patientsExposed ?? 0;
+  if (ctx.patientsExposed === undefined) return '환자 — 확인 중.';
+  const ex = ctx.patientsExposed;
   if (ex === 0) return '환자 — 노출자 없음.';
   const trans = ctx.patientsTransport ?? 0;
-  return `환자 — 노출자 ${ex}명, 이송 ${trans}명, 응급실 사전 통보 완료.`;
+  const notify = ctx.hospitalNotified ? '응급실 사전 통보 완료' : '응급실 사전 통보 전';
+  return `환자 — 노출자 ${ex}명, 이송 ${trans}명, ${notify}.`;
 }
 
 function resourceLine(ctx: IncidentContext): string {
@@ -99,7 +104,7 @@ export function composeRadio(kind: RadioKind, ctx: IncidentContext): string {
 
   return [
     `${head} ${stamp} 상황 종료.`,
-    ctx.closingSummary ? `종료 요약 — ${ctx.closingSummary}.` : '종료 요약 — 누출 통제·환자 인계 완료.',
+    ctx.closingSummary ? `종료 요약 — ${ctx.closingSummary}.` : '종료 요약 — (입력 필요).',
     locationLine(ctx),
     substanceLine(ctx),
     patientLine(ctx),

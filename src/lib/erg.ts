@@ -119,7 +119,7 @@ export function classifyPosition(
 export const ZONE_LABEL: Record<ZoneStatus, { short: string; label: string; color: string; bg: string }> = {
   isolation: {
     short: '초기 이격 안',
-    label: '초기 이격거리 안 — 보호장비 없이 진입 금지',
+    label: '초기 이격거리 안 — 지정 PPE·SCBA 착용 진입조만 진입',
     color: '#dc2626',
     bg: 'rgba(220,38,38,0.20)',
   },

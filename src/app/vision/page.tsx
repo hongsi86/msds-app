@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
+import { AiDbLink } from '@/components/ai-db-link';
 import { AiDisclaimer } from '@/components/ai-disclaimer';
 
 interface VisionResult {
@@ -11,8 +12,6 @@ interface VisionResult {
   confidence: '높음' | '중간' | '낮음';
   identified_from: string;
   hazard_class?: string;
-  danger_level?: number;
-  immediate_actions: string[];
 }
 
 const MAX_EDGE_PX = 1280;
@@ -36,13 +35,6 @@ function confidenceBadge(c: string) {
   if (c === '높음') return 'bg-rose-50 text-rose-700 ring-1 ring-rose-200';
   if (c === '중간') return 'bg-amber-50 text-amber-700 ring-1 ring-amber-200';
   return 'bg-slate-100 text-slate-500 ring-1 ring-slate-200';
-}
-
-function dangerBadge(level: number) {
-  if (level === 4) return 'bg-rose-50 text-rose-700 ring-rose-200';
-  if (level === 3) return 'bg-orange-50 text-orange-700 ring-orange-200';
-  if (level === 2) return 'bg-amber-50 text-amber-700 ring-amber-200';
-  return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
 }
 
 export default function VisionPage() {
@@ -158,7 +150,7 @@ export default function VisionPage() {
           </button>
           <div>
             <h1 className="text-base font-bold text-slate-900 leading-tight">📸 사진 식별</h1>
-            <p className="text-[10px] text-slate-400 leading-none mt-0.5">라벨·GHS·UN 마크 분석</p>
+            <p className="text-xs text-slate-400 leading-none mt-0.5">라벨·GHS·UN 마크 분석</p>
           </div>
         </div>
       </header>
@@ -267,12 +259,7 @@ export default function VisionPage() {
                     </button>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
-                    {item.danger_level && (
-                      <span className={`rounded-full ring-1 px-2 py-0.5 text-[11px] font-semibold ${dangerBadge(item.danger_level)}`}>
-                        위험도 {item.danger_level}
-                      </span>
-                    )}
-                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${confidenceBadge(item.confidence)}`}>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${confidenceBadge(item.confidence)}`}>
                       {item.confidence}
                     </span>
                   </div>
@@ -288,17 +275,7 @@ export default function VisionPage() {
                   <span className="text-slate-400 font-semibold">식별 근거: </span>{item.identified_from}
                 </p>
 
-                {item.immediate_actions.length > 0 && (
-                  <div className="rounded-xl bg-amber-50/70 border border-amber-100 p-3 space-y-1.5">
-                    <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">즉각 조치</p>
-                    {item.immediate_actions.map((action, j) => (
-                      <p key={j} className="text-xs text-slate-700 flex gap-2">
-                        <span className="text-amber-500 shrink-0">&bull;</span>
-                        {action}
-                      </p>
-                    ))}
-                  </div>
-                )}
+                <AiDbLink cas={item.cas_number} name={item.chemical_name} />
               </div>
             ))}
           </div>
@@ -307,10 +284,10 @@ export default function VisionPage() {
         {!capturedImage && results.length === 0 && !error && (
           <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-2 shadow-sm">
             <p className="text-xs font-semibold text-slate-500">💡 촬영 팁</p>
-            <p className="text-[11px] text-slate-400 leading-relaxed">• GHS 라벨이나 위험물 표지가 선명하게 보이도록 촬영</p>
-            <p className="text-[11px] text-slate-400 leading-relaxed">• NFPA 다이아몬드, UN 번호가 있으면 정확도 향상</p>
-            <p className="text-[11px] text-slate-400 leading-relaxed">• 용기 전체가 보이도록 촬영하면 형태 분석 가능</p>
-            <p className="text-[11px] text-slate-400 leading-relaxed">• 누출 현장의 색상, 상태도 분석 가능</p>
+            <p className="text-xs text-slate-400 leading-relaxed">• GHS 라벨이나 위험물 표지가 선명하게 보이도록 촬영</p>
+            <p className="text-xs text-slate-400 leading-relaxed">• NFPA 다이아몬드, UN 번호가 있으면 정확도 향상</p>
+            <p className="text-xs text-slate-400 leading-relaxed">• 용기 전체가 보이도록 촬영하면 형태 분석 가능</p>
+            <p className="text-xs text-slate-400 leading-relaxed">• 누출 현장의 색상, 상태도 분석 가능</p>
           </div>
         )}
       </main>

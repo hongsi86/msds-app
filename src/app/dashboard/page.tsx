@@ -107,20 +107,24 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const chemParam = searchParams.get('chemical') || '';
 
-  const [incident, setIncident] = useState<Incident | null>(null);
+  // 이 화면은 useSearchParams 때문에 브라우저에서만 그려지므로 localStorage 를 초기값으로 바로 읽는다
+  const [saved] = useState<Incident | null>(() => {
+    try {
+      const raw = localStorage.getItem('chemguard_incident');
+      return raw ? (JSON.parse(raw) as Incident) : null;
+    } catch {
+      return null;
+    }
+  });
+  // 다른 물질로 들어왔는데 진행 중인 사고가 있으면 덮어쓰지 않고 고르게 한다
+  const [conflict, setConflict] = useState(() => !!saved && !!chemParam && saved.chemical_name !== chemParam);
+  const [incident, setIncident] = useState<Incident | null>(() => saved ?? createDefaultIncident(chemParam));
+  const [confirmNew, setConfirmNew] = useState(false);
   const [activeRole, setActiveRole] = useState<RoleType>('EMS');
   const [mobilePanel, setMobilePanel] = useState<'timeline' | 'status' | 'checklist'>('status');
   const [newMessage, setNewMessage] = useState('');
   const [newRole, setNewRole] = useState<RoleType>('DM');
   const [elapsed, setElapsed] = useState('00:00:00');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('chemguard_incident');
-    if (saved) {
-      try { setIncident(JSON.parse(saved)); return; } catch { /* ignore */ }
-    }
-    setIncident(createDefaultIncident(chemParam));
-  }, [chemParam]);
 
   useEffect(() => {
     if (incident) localStorage.setItem('chemguard_incident', JSON.stringify(incident));
@@ -180,10 +184,27 @@ function DashboardContent() {
     setIncident({ ...incident, timeline: [...incident.timeline, event] });
   }, [incident]);
 
-  const newIncident = useCallback(() => {
+  // 기록이 기기 한 대에만 있어 실수로 지우면 되살릴 수 없다 — 두 번 눌러야 새로 시작
+  useEffect(() => {
+    if (!confirmNew) return;
+    const t = setTimeout(() => setConfirmNew(false), 4000);
+    return () => clearTimeout(t);
+  }, [confirmNew]);
+
+  const startNew = useCallback((chemical: string) => {
     localStorage.removeItem('chemguard_incident');
-    setIncident(createDefaultIncident(''));
+    setIncident(createDefaultIncident(chemical));
+    setConfirmNew(false);
+    setConflict(false);
   }, []);
+
+  const newIncident = useCallback(() => {
+    if (!confirmNew) {
+      setConfirmNew(true);
+      return;
+    }
+    startNew('');
+  }, [confirmNew, startNew]);
 
   if (!incident) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><span className="text-slate-400">로딩 중...</span></div>;
 
@@ -205,28 +226,46 @@ function DashboardContent() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold text-slate-900 truncate">{incident.title}</h1>
-              <span className={`shrink-0 rounded-full ring-1 px-2 py-0.5 text-[10px] font-semibold ${SEVERITY_COLORS[incident.severity]}`}>
+              <span className={`shrink-0 rounded-full ring-1 px-2 py-0.5 text-xs font-semibold ${SEVERITY_COLORS[incident.severity]}`}>
                 {SEVERITY_LABELS[incident.severity]}
               </span>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
                 incident.status === 'active' ? 'bg-rose-50 text-rose-600' :
                 incident.status === 'contained' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
               }`}>
                 {STATUS_LABELS[incident.status]}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400">{incident.chemical_name} · 경과 {elapsed}</p>
+            <p className="text-xs text-slate-400">{incident.chemical_name} · 경과 {elapsed}</p>
           </div>
           <button
             onClick={() => router.push('/dashboard/report-preview')}
-            className="shrink-0 rounded-lg bg-slate-900 text-white px-3 py-1.5 text-[11px] hover:bg-slate-700 transition-colors"
+            className="shrink-0 rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs hover:bg-slate-700 transition-colors"
           >
             📄 보고서
           </button>
-          <button onClick={newIncident} className="shrink-0 rounded-lg bg-slate-100 border border-slate-200 px-3 py-1.5 text-[11px] text-slate-500 hover:text-slate-700 transition-colors">
-            + 새 사고
+          <button
+            onClick={newIncident}
+            className={`shrink-0 min-h-10 rounded-lg border px-3 text-xs font-semibold transition-colors ${
+              confirmNew ? 'bg-rose-600 border-rose-600 text-white' : 'bg-slate-100 border-slate-200 text-slate-600'
+            }`}
+          >
+            {confirmNew ? '기록 지우고 새로? 한 번 더' : '+ 새 사고'}
           </button>
         </div>
+        {conflict && (
+          <div className="max-w-6xl mx-auto px-4 pb-3 flex flex-wrap items-center gap-2 text-sm">
+            <p className="flex-1 min-w-[12rem] text-slate-800">
+              진행 중인 사고(<b>{incident.chemical_name}</b>)가 있습니다.
+            </p>
+            <button onClick={() => setConflict(false)} className="min-h-11 rounded-lg bg-slate-100 border border-slate-300 px-3 font-semibold text-slate-800">
+              이어서 기록
+            </button>
+            <button onClick={() => startNew(chemParam)} className="min-h-11 rounded-lg bg-rose-600 px-3 font-semibold text-white">
+              {chemParam} 새 사고로
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Mobile panel tabs */}
@@ -249,15 +288,15 @@ function DashboardContent() {
         {/* Timeline panel */}
         <section className={`flex-1 min-w-0 flex flex-col border-r border-slate-200 ${mobilePanel !== 'timeline' ? 'hidden md:flex' : ''}`}>
           <div className="px-4 pt-3 pb-2">
-            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">타임라인</p>
+            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">타임라인</p>
           </div>
           <div className="flex-1 overflow-y-auto px-4 space-y-2 pb-2 min-h-0">
             {incident.timeline.map((event) => (
               <div key={event.id} className={`rounded-xl bg-white border border-slate-200 p-3 border-l-2 ${ROLE_BG[event.role]} shadow-sm`}>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs">{TYPE_ICONS[event.type]}</span>
-                  <span className={`rounded-full ring-1 px-1.5 py-0.5 text-[9px] font-bold ${ROLE_COLORS[event.role]}`}>{event.role}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">{formatTime(event.timestamp)}</span>
+                  <span className={`rounded-full ring-1 px-1.5 py-0.5 text-xs font-bold ${ROLE_COLORS[event.role]}`}>{event.role}</span>
+                  <span className="text-xs text-slate-400 font-mono">{formatTime(event.timestamp)}</span>
                 </div>
                 <p className="text-xs text-slate-700">{event.message}</p>
               </div>
@@ -270,7 +309,7 @@ function DashboardContent() {
                 <button
                   key={r}
                   onClick={() => setNewRole(r)}
-                  className={`rounded-lg px-2 py-1 text-[10px] font-bold transition-all ${newRole === r ? ROLE_COLORS[r] + ' ring-1' : 'bg-slate-100 text-slate-400'}`}
+                  className={`rounded-lg px-2 py-1 text-xs font-bold transition-all ${newRole === r ? ROLE_COLORS[r] + ' ring-1' : 'bg-slate-100 text-slate-400'}`}
                 >
                   {r}
                 </button>
@@ -298,7 +337,7 @@ function DashboardContent() {
 
         {/* Status panel */}
         <section className={`w-full md:w-72 shrink-0 flex flex-col p-4 space-y-3 overflow-y-auto border-r border-slate-200 ${mobilePanel !== 'status' ? 'hidden md:flex' : ''}`}>
-          <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">현황</p>
+          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">현황</p>
 
           {/* Casualties */}
           <div className="space-y-2">
@@ -319,7 +358,7 @@ function DashboardContent() {
 
           {/* Quick actions */}
           <div className="space-y-1.5">
-            <p className="text-[10px] text-slate-400 font-semibold">빠른 조치</p>
+            <p className="text-xs text-slate-400 font-semibold">빠른 조치</p>
             {[
               { label: '🚨 대피 명령', msg: '[DM] 주민 대피 명령 발령' },
               { label: '🚒 증원 요청', msg: '[DM] 추가 소방 인력 증원 요청' },
@@ -337,13 +376,13 @@ function DashboardContent() {
 
           {/* Severity control */}
           <div className="space-y-1.5">
-            <p className="text-[10px] text-slate-400 font-semibold">심각도 변경</p>
+            <p className="text-xs text-slate-400 font-semibold">심각도 변경</p>
             <div className="flex gap-1.5">
               {([1, 2, 3] as const).map((s) => (
                 <button
                   key={s}
                   onClick={() => setIncident({ ...incident, severity: s })}
-                  className={`flex-1 rounded-lg py-2 text-[11px] font-bold ring-1 transition-all ${incident.severity === s ? SEVERITY_COLORS[s] : 'bg-white text-slate-400 ring-slate-200'}`}
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold ring-1 transition-all ${incident.severity === s ? SEVERITY_COLORS[s] : 'bg-white text-slate-400 ring-slate-200'}`}
                 >
                   {SEVERITY_LABELS[s]}
                 </button>
@@ -353,13 +392,13 @@ function DashboardContent() {
 
           {/* Status control */}
           <div className="space-y-1.5">
-            <p className="text-[10px] text-slate-400 font-semibold">상태 변경</p>
+            <p className="text-xs text-slate-400 font-semibold">상태 변경</p>
             <div className="flex gap-1.5">
               {(['active', 'contained', 'resolved'] as const).map((st) => (
                 <button
                   key={st}
                   onClick={() => setIncident({ ...incident, status: st })}
-                  className={`flex-1 rounded-lg py-2 text-[11px] font-bold ring-1 transition-all ${incident.status === st
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold ring-1 transition-all ${incident.status === st
                     ? st === 'active' ? 'bg-rose-50 text-rose-600 ring-rose-200'
                     : st === 'contained' ? 'bg-amber-50 text-amber-600 ring-amber-200'
                     : 'bg-emerald-50 text-emerald-600 ring-emerald-200'
@@ -375,7 +414,7 @@ function DashboardContent() {
         {/* Checklist panel */}
         <section className={`flex-1 min-w-0 flex flex-col ${mobilePanel !== 'checklist' ? 'hidden md:flex' : ''}`}>
           <div className="px-4 pt-3 pb-2">
-            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">역할별 체크리스트</p>
+            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">역할별 체크리스트</p>
           </div>
           {/* Role tabs */}
           <div className="shrink-0 px-4 flex gap-1.5 pb-2">
@@ -395,7 +434,7 @@ function DashboardContent() {
               <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div className="h-full rounded-full bg-blue-500 transition-all duration-300" style={{ width: `${progress}%` }} />
               </div>
-              <span className="text-[11px] text-slate-400 font-mono">{completedCount}/{roleChecklist.length}</span>
+              <span className="text-xs text-slate-400 font-mono">{completedCount}/{roleChecklist.length}</span>
             </div>
           </div>
           {/* Checklist items */}
@@ -416,7 +455,7 @@ function DashboardContent() {
                 <div className="flex-1 min-w-0">
                   <p className={`text-xs ${item.completed ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{item.task}</p>
                   {item.completed_at && (
-                    <p className="text-[10px] text-slate-400 mt-0.5">완료 {formatTime(item.completed_at)}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">완료 {formatTime(item.completed_at)}</p>
                   )}
                 </div>
               </button>
