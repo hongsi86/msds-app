@@ -44,3 +44,13 @@ describe('물질 데이터 불변식', () => {
     expect(duplicates).toEqual([]);
   });
 });
+
+describe('RES 불변식', () => {
+  it('SCBA 필수라고 적은 물질의 PPE 가 C/D(공기정화식)이면 안 된다', () => {
+    const bad = CHEMICALS.filter(
+      (c) => ['C', 'D'].includes(c.res_protocol.ppe_level) &&
+        c.res_protocol.scene_approach.some((s) => /SCBA\s*필수/.test(s)),
+    ).map((c) => c.id);
+    expect(bad).toEqual([]);
+  });
+});

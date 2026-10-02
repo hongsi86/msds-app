@@ -209,7 +209,6 @@ export const CHEMICALS: Chemical[] = [
       legal_classification: [
         "화학물질관리법 제2조: 유해화학물질 (사고대비물질 제39호)",
         "산업안전보건법 시행규칙 별표 13: 관리대상 유해물질",
-        "위험물안전관리법: 제6류 위험물 (산화성 액체)",
         "화학물질의 등록 및 평가 등에 관한 법률(화평법): 기존화학물질",
       ],
       report_deadline_hours: 1,
@@ -709,7 +708,6 @@ export const CHEMICALS: Chemical[] = [
         "화학물질관리법: 유해화학물질 (사고대비물질 제4호)",
         "고압가스 안전관리법: 독성 가스",
         "산업안전보건법: 특별관리물질, 노출 기준 1ppm(TLV-C)",
-        "화학무기금지협약(CWC): 일정 조건 하 감시 대상",
       ],
       report_deadline_hours: 1,
       environmental_checks: [
@@ -859,7 +857,7 @@ export const CHEMICALS: Chemical[] = [
         "유산(Lactate) — 세포 저산소증 지표",
         "메트헤모글로빈 수치 (해독제 투여 전·후)",
         "ECG — 심근 허혈, 부정맥",
-        "혈중 H₂S (thiocyanate) — 급성기 의미 제한적",
+        "혈중·소변 thiosulfate — 급성기 의미 제한적",
         "흉부 X-ray — 폐부종",
         "뇌 MRI — 의식 소실 환자 (저산소성 뇌 손상 평가)",
       ],
@@ -956,7 +954,7 @@ export const CHEMICALS: Chemical[] = [
         "화학물질관리법: 유해화학물질 (사고대비물질 제16호)",
         "고압가스 안전관리법: 독성 가스",
         "산업안전보건법: 특별관리물질, 노출 기준 1ppm(TWA) / 5ppm(STEL)",
-        "위험물안전관리법: 제4류 특수 인화물",
+        "고압가스 안전관리법: 독성·가연성 가스",
       ],
       report_deadline_hours: 1,
       environmental_checks: [
@@ -1334,7 +1332,7 @@ export const CHEMICALS: Chemical[] = [
       leak_control: [
         "누출원 차단·둑쌓기로 확산 방지",
         "물 분무로 증기 흡수, 액체 누출원 자극 금지",
-        "석회·중탄산칼슘으로 중화 가능 (HAZMAT 팀)",
+        "석회·탄산칼슘으로 중화 가능 (HAZMAT 팀)",
       ],
       decon_recommendation: "급속 대량 제독 — 물 세척 즉시 + 글루콘산칼슘 젤 도포 (HF 특이)",
       bleve_risk: false,
@@ -1388,7 +1386,7 @@ export const CHEMICALS: Chemical[] = [
       termination_criteria: ["누출 완전 차단", "잔류 HF 불검출", "모든 피해자 이송"],
     },
     csa_protocol: {
-      legal_classification: ["화학물질관리법: 사고대비물질", "산업안전보건법: 특별관리물질 TWA 3ppm", "화학무기금지협약 감시대상"],
+      legal_classification: ["화학물질관리법: 사고대비물질", "산업안전보건법: 특별관리물질 TWA 3ppm"],
       report_deadline_hours: 1,
       environmental_checks: ["수계 불소이온 농도", "토양 오염", "대기 HF 모니터링"],
       admin_actions: ["NICS 즉시 보고", "반도체·화학공장 안전점검", "재발방지대책"],
@@ -1527,7 +1525,7 @@ export const CHEMICALS: Chemical[] = [
     appearance: "무색 기체",
     odor: "무취 무미 — 감지 불가",
     res_protocol: {
-      ppe_level: "C",
+      ppe_level: "B",
       erg_guide_number: "119",
       erg_distance: {
         initial_isolation_m: { small_spill: 30, large_spill: 200 },
@@ -2968,7 +2966,7 @@ export const CHEMICALS: Chemical[] = [
       absolute_prohibitions: ["피부 노출 경시 금지", "점화원 금지", "SCBA 없이 진입 금지"],
     },
     med_protocol: {
-      clinical_symptoms: ["두통, 구역, 어지러움 → 경련 → 혼수 (시안화물 기전)", "대사산증, 고 lactate", "발암성: 폐암 (IARC 2B)"],
+      clinical_symptoms: ["두통, 구역, 어지러움 → 경련 → 혼수 (시안화물 기전)", "대사산증, 고 lactate", "발암성: 폐암 (IARC Group 1, 2024)"],
       lab_tests: ["Lactate", "시안화물 농도", "ABGA", "메트Hb", "간·신기능"],
       antidotes: [
         { name: "히드록소코발라민", dose: "5g IV", note: "1차 해독제" },
@@ -2988,7 +2986,7 @@ export const CHEMICALS: Chemical[] = [
       termination_criteria: ["누출 차단", "AN 불검출"],
     },
     csa_protocol: {
-      legal_classification: ["화학물질관리법: 사고대비물질", "산업안전보건법: 특별관리물질 TWA 2ppm (발암 2B)"],
+      legal_classification: ["화학물질관리법: 사고대비물질", "산업안전보건법: 특별관리물질 TWA 2ppm", "IARC: Group 1 발암물질 (2024, Monograph 136)"],
       report_deadline_hours: 1,
       environmental_checks: ["대기 AN 모니터링", "수계 시안화물"],
       admin_actions: ["NICS 보고", "석유화학 공정 점검"],
